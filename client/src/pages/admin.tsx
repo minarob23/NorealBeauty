@@ -1,0 +1,951 @@
+
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Link } from "wouter";
+import {
+  ChevronRight,
+  Package,
+  Users,
+  ShoppingCart,
+  DollarSign,
+  Edit,
+  Trash2,
+  Plus,
+  FileText,
+  BarChart3,
+  Star,
+  X,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
+import type { Product, Order, Category, SkinType } from "@shared/schema";
+import AdminUsers from "./admin-users";
+
+const categories: Category[] = [
+  "moisturizers",
+  "serums",
+  "cleansers",
+  "masks",
+  "toners",
+  "suncare",
+  "eye-care",
+  "treatments"
+];
+
+const skinTypes: SkinType[] = ["all", "dry", "oily", "combination", "sensitive"];
+
+export default function Admin() {
+  const { user, isLoading, isAuthenticated } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [editProduct, setEditProduct] = useState<Product | null>(null);
+  const [deleteProductId, setDeleteProductId] = useState<string | null>(null);
+  const [imageInput, setImageInput] = useState("");
+  const [ingredientInput, setIngredientInput] = useState("");
+
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    shortDescription: "",
+    price: "",
+    category: "serums" as Category,
+    skinType: "all" as SkinType,
+    ingredients: [] as string[],
+    images: [] as string[],
+    inStock: true,
+    isBestSeller: false,
+    isNew: false,
+  });
+
+  const { data: products = [], isLoading: productsLoading } = useQuery<Product[]>({
+    queryKey: ["/api/products"],
+    enabled: isAuthenticated,
+    refetchInterval: 5000, // Refetch every 5 seconds to show new products
+  });
+
+  const { data: orders = [], isLoading: ordersLoading } = useQuery<any[]>({
+    queryKey: ["/api/admin/orders"],
+    enabled: isAuthenticated && (user?.isAdmin || (user as any)?.isOwner),
+    refetchInterval: 5000, // Refetch every 5 seconds to show new orders
+  });
+
+  // Mutations
+  const createProductMutation = useMutation({
+    mutationFn: async (productData: any) => {
+      const response = await fetch("/api/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(productData),
+      });
+      if (!response.ok) throw new Error("Failed to create product");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      toast({ title: "Success", description: "Product created successfully" });
+      resetForm();
+      setIsAddDialogOpen(false);
+    },
+    onError: () => {
+      toast({ variant: "destructive", title: "Error", description: "Failed to create product" });
+    },
+  });
+
+  const updateProductMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+      const response = await fetch(`/api/products/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error("Failed to update product");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      toast({ title: "Success", description: "Product updated successfully" });
+      resetForm();
+      setEditProduct(null);
+    },
+    onError: () => {
+      toast({ variant: "destructive", title: "Error", description: "Failed to update product" });
+    },
+  });
+
+  const deleteProductMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await fetch(`/api/products/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!response.ok) throw new Error("Failed to delete product");
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      toast({ title: "Success", description: "Product deleted successfully" });
+      setDeleteProductId(null);
+    },
+    onError: () => {
+      toast({ variant: "destructive", title: "Error", description: "Failed to delete product" });
+    },
+  });
+
+  useEffect(() => {
+    if (editProduct) {
+      setFormData({
+        name: editProduct.name,
+        description: editProduct.description,
+        shortDescription: editProduct.shortDescription,
+        price: editProduct.price.toString(),
+        category: editProduct.category,
+        skinType: editProduct.skinType,
+        ingredients: editProduct.ingredients,
+        images: editProduct.images,
+        inStock: editProduct.inStock,
+        isBestSeller: editProduct.isBestSeller || false,
+        isNew: editProduct.isNew || false,
+      });
+    }
+  }, [editProduct]);
+
+  const resetForm = () => {
+    setFormData({
+      name: "",
+      description: "",
+      shortDescription: "",
+      price: "",
+      category: "serums",
+      skinType: "all",
+      ingredients: [],
+      images: [],
+      inStock: true,
+      isBestSeller: false,
+      isNew: false,
+    });
+    setImageInput("");
+    setIngredientInput("");
+  };
+
+  const handleAddImage = () => {
+    if (imageInput.trim()) {
+      setFormData(prev => ({
+        ...prev,
+        images: [...prev.images, imageInput.trim()]
+      }));
+      setImageInput("");
+    }
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleAddIngredient = () => {
+    if (ingredientInput.trim()) {
+      setFormData(prev => ({
+        ...prev,
+        ingredients: [...prev.ingredients, ingredientInput.trim()]
+      }));
+      setIngredientInput("");
+    }
+  };
+
+  const handleRemoveIngredient = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      ingredients: prev.ingredients.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleSubmit = () => {
+    const productData = {
+      ...formData,
+      price: parseFloat(formData.price),
+    };
+
+    if (editProduct) {
+      updateProductMutation.mutate({ id: editProduct.id, data: productData });
+    } else {
+      createProductMutation.mutate(productData);
+    }
+  };
+
+  const handleDelete = () => {
+    if (deleteProductId) {
+      deleteProductMutation.mutate(deleteProductId);
+    }
+  };
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to access the admin dashboard.",
+        variant: "destructive",
+      });
+      setTimeout(() => {
+        window.location.href = "/admin-login";
+      }, 500);
+    }
+  }, [isAuthenticated, isLoading, toast]);
+
+  useEffect(() => {
+    if (!isLoading && isAuthenticated && !user?.isAdmin && !(user as any)?.isOwner) {
+      toast({
+        title: "Access Denied",
+        description: "You don't have permission to access the admin dashboard.",
+        variant: "destructive",
+      });
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 1000);
+    }
+  }, [user, isLoading, isAuthenticated, toast]);
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-12">
+        <Skeleton className="h-12 w-64 mb-8" />
+        <div className="grid gap-6 md:grid-cols-3 mb-8">
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-32 w-full rounded-lg" />
+          ))}
+        </div>
+        <Skeleton className="h-96 w-full rounded-lg" />
+      </div>
+    );
+  }
+
+  // Allow both admins and owners
+  if (!isAuthenticated || (!user?.isAdmin && !(user as any)?.isOwner)) {
+    return null;
+  }
+
+  const totalRevenue = orders.reduce((sum, order) => sum + parseFloat(order.total.toString()), 0);
+  const totalOrders = orders.length;
+  const totalProducts = products.length;
+  const inStockProducts = products.filter(p => p.inStock).length;
+  const bestSellerCount = products.filter(p => p.isBestSeller).length;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+      className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20"
+    >
+      <div className="container mx-auto px-4 py-8">
+        {/* Breadcrumb */}
+        <div className="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
+          <Link href="/">
+            <span className="hover:text-foreground transition-colors cursor-pointer">Home</span>
+          </Link>
+          <ChevronRight className="h-4 w-4" />
+          <span className="text-foreground font-medium">Admin Dashboard</span>
+        </div>
+
+        {/* Header Section */}
+        <div className="mb-8">
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="font-serif text-4xl md:text-5xl font-light tracking-wide mb-3 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent"
+          >
+            Admin Dashboard
+          </motion.h1>
+          <p className="text-muted-foreground text-lg">
+            Manage your products, orders, and users efficiently
+          </p>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="mb-8 flex flex-wrap gap-3">
+          <Link href="/admin/users">
+            <Button variant="outline" className="flex items-center gap-2 hover:border-purple-500 hover:text-purple-600 transition-colors">
+              <Users className="h-4 w-4" />
+              User Management
+            </Button>
+          </Link>
+          <Link href="/admin/products-analytics">
+            <Button variant="outline" className="flex items-center gap-2 hover:border-blue-500 hover:text-blue-600 transition-colors">
+              <BarChart3 className="h-4 w-4" />
+              Products & Orders Analytics
+            </Button>
+          </Link>
+          <Link href="/admin/blogs">
+            <Button variant="outline" className="flex items-center gap-2 hover:border-pink-500 hover:text-pink-600 transition-colors">
+              <FileText className="h-4 w-4" />
+              Manage Blogs
+            </Button>
+          </Link>
+        </div>
+
+        {/* Stats Overview */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <Card className="border-l-4 border-l-purple-500 hover:shadow-lg transition-shadow bg-gradient-to-br from-purple-50 to-background dark:from-purple-950/20 dark:to-background">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Total Revenue
+                </CardTitle>
+                <div className="h-10 w-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                  <DollarSign className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">
+                  ${totalRevenue.toFixed(2)}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  From {totalOrders} orders
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <Card className="border-l-4 border-l-blue-500 hover:shadow-lg transition-shadow bg-gradient-to-br from-blue-50 to-background dark:from-blue-950/20 dark:to-background">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Total Orders
+                </CardTitle>
+                <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                  <ShoppingCart className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                  {totalOrders}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Total transactions
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <Card className="border-l-4 border-l-green-500 hover:shadow-lg transition-shadow bg-gradient-to-br from-green-50 to-background dark:from-green-950/20 dark:to-background">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Total Products
+                </CardTitle>
+                <div className="h-10 w-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                  <Package className="h-5 w-5 text-green-600 dark:text-green-400" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-green-600 dark:text-green-400">
+                  {totalProducts}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {inStockProducts} in stock
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            <Card className="border-l-4 border-l-orange-500 hover:shadow-lg transition-shadow bg-gradient-to-br from-orange-50 to-background dark:from-orange-950/20 dark:to-background">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Best Sellers
+                </CardTitle>
+                <div className="h-10 w-10 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+                  <Star className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-orange-600 dark:text-orange-400">
+                  {bestSellerCount}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Popular products
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+
+        {/* Main Content */}
+        <Tabs defaultValue="products" className="space-y-6">
+          <TabsList className="grid w-full max-w-md grid-cols-3 h-12 bg-muted/50">
+            <TabsTrigger value="products" className="gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white">
+              <Package className="h-4 w-4" />
+              Products
+            </TabsTrigger>
+            <TabsTrigger value="orders" className="gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-cyan-500 data-[state=active]:text-white">
+              <ShoppingCart className="h-4 w-4" />
+              Orders
+            </TabsTrigger>
+            <TabsTrigger value="users" className="gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-500 data-[state=active]:text-white">
+              <Users className="h-4 w-4" />
+              Users
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="products" className="space-y-4">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <Card className="border-t-4 border-t-purple-500 shadow-lg">
+                <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-2xl flex items-center gap-2">
+                        <Package className="h-6 w-6 text-purple-600" />
+                        Product Management
+                      </CardTitle>
+                      <CardDescription className="mt-2">
+                        Manage your product catalog and inventory
+                      </CardDescription>
+                    </div>
+                    <Button 
+                      className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                      onClick={() => setIsAddDialogOpen(true)}
+                    >
+                      <Plus className="mr-2 h-4 w-4" />
+                      Add Product
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  {productsLoading ? (
+                    <div className="space-y-4">
+                      {[1, 2, 3, 4].map((i) => (
+                        <Skeleton key={i} className="h-16 w-full" />
+                      ))}
+                    </div>
+                  ) : products.length === 0 ? (
+                    <div className="text-center py-16">
+                      <Package className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+                      <p className="text-xl font-medium text-muted-foreground mb-2">No products yet</p>
+                      <p className="text-sm text-muted-foreground mb-6">Start by adding your first product</p>
+                      <Button 
+                        className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                        onClick={() => setIsAddDialogOpen(true)}
+                      >
+                        <Plus className="mr-2 h-4 w-4" />
+                        Add Your First Product
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="rounded-lg border overflow-hidden">
+                      <Table>
+                        <TableHeader className="bg-muted/50">
+                          <TableRow>
+                            <TableHead className="font-semibold">Name</TableHead>
+                            <TableHead className="font-semibold">Category</TableHead>
+                            <TableHead className="font-semibold">Price</TableHead>
+                            <TableHead className="font-semibold">Rating</TableHead>
+                            <TableHead className="font-semibold">Stock</TableHead>
+                            <TableHead className="font-semibold text-right">Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {products.map((product) => (
+                            <TableRow key={product.id} className="hover:bg-muted/50 transition-colors">
+                              <TableCell className="font-medium">
+                                <div className="flex items-center gap-2">
+                                  {product.isBestSeller && (
+                                    <Star className="h-4 w-4 text-orange-500 fill-orange-500" />
+                                  )}
+                                  {product.name}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant="outline" className="capitalize">
+                                  {product.category}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="font-semibold">${product.price.toFixed(2)}</TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-1">
+                                  <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                                  <span className="font-medium">{product.rating}</span>
+                                  <span className="text-muted-foreground text-sm">({product.reviewCount})</span>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant={product.inStock ? "default" : "destructive"} className={product.inStock ? "bg-green-500 hover:bg-green-600" : ""}>
+                                  {product.inStock ? "In Stock" : "Out of Stock"}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex gap-2 justify-end">
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="hover:bg-blue-100 hover:text-blue-600 dark:hover:bg-blue-900/30"
+                                    onClick={() => setEditProduct(product)}
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/30"
+                                    onClick={() => setDeleteProductId(product.id)}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
+          </TabsContent>
+
+          <TabsContent value="orders" className="space-y-4">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <Card className="border-t-4 border-t-blue-500 shadow-lg">
+                <CardHeader className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20">
+                  <div>
+                    <CardTitle className="text-2xl flex items-center gap-2">
+                      <ShoppingCart className="h-6 w-6 text-blue-600" />
+                      Order Management
+                    </CardTitle>
+                    <CardDescription className="mt-2">
+                      View and manage customer orders
+                    </CardDescription>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  {ordersLoading ? (
+                    <div className="space-y-4">
+                      {[1, 2, 3, 4].map((i) => (
+                        <Skeleton key={i} className="h-16 w-full" />
+                      ))}
+                    </div>
+                  ) : orders.length === 0 ? (
+                    <div className="text-center py-16">
+                      <ShoppingCart className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+                      <p className="text-xl font-medium text-muted-foreground mb-2">No orders yet</p>
+                      <p className="text-sm text-muted-foreground">Orders will appear here when customers make purchases</p>
+                    </div>
+                  ) : (
+                    <div className="rounded-lg border overflow-hidden">
+                      <Table>
+                        <TableHeader className="bg-muted/50">
+                          <TableRow>
+                            <TableHead className="font-semibold">Order ID</TableHead>
+                            <TableHead className="font-semibold">Customer</TableHead>
+                            <TableHead className="font-semibold">Date</TableHead>
+                            <TableHead className="font-semibold">Status</TableHead>
+                            <TableHead className="font-semibold">Total</TableHead>
+                            <TableHead className="font-semibold text-right">Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {orders.map((order) => (
+                            <TableRow key={order.id} className="hover:bg-muted/50 transition-colors">
+                              <TableCell className="font-mono font-medium">
+                                #{order.id.slice(0, 8).toUpperCase()}
+                              </TableCell>
+                              <TableCell>
+                                <div>
+                                  <div className="font-medium">
+                                    {order.userFirstName || ''} {order.userLastName || ''}
+                                  </div>
+                                  <div className="text-xs text-muted-foreground">
+                                    {order.userEmail}
+                                  </div>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                {order.createdAt && new Date(order.createdAt).toLocaleDateString('en-US', {
+                                  year: 'numeric',
+                                  month: 'short',
+                                  day: 'numeric'
+                                })}
+                              </TableCell>
+                              <TableCell>
+                                <Badge 
+                                  variant={order.status === 'completed' ? 'default' : 'secondary'}
+                                  className={
+                                    order.status === 'completed' 
+                                      ? 'bg-green-500 hover:bg-green-600' 
+                                      : order.status === 'pending'
+                                      ? 'bg-yellow-500 hover:bg-yellow-600'
+                                      : 'bg-blue-500 hover:bg-blue-600'
+                                  }
+                                >
+                                  {order.status.toUpperCase()}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="font-semibold text-lg">
+                                ${parseFloat(order.total.toString()).toFixed(2)}
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex justify-end">
+                                  <Button variant="ghost" size="sm" className="hover:bg-blue-100 hover:text-blue-600 dark:hover:bg-blue-900/30">
+                                    View Details
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
+          </TabsContent>
+
+          <TabsContent value="users" className="space-y-4">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <AdminUsers />
+            </motion.div>
+          </TabsContent>
+        </Tabs>
+
+        {/* Add/Edit Product Dialog */}
+        <Dialog open={isAddDialogOpen || !!editProduct} onOpenChange={(open) => {
+          if (!open) {
+            setIsAddDialogOpen(false);
+            setEditProduct(null);
+            resetForm();
+          }
+        }}>
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>{editProduct ? "Edit Product" : "Add New Product"}</DialogTitle>
+              <DialogDescription>
+                {editProduct ? "Update product details" : "Fill in the details to create a new product"}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="name">Product Name *</Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder="e.g., Hydra-Glow Serum"
+                />
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="shortDescription">Short Description *</Label>
+                <Textarea
+                  id="shortDescription"
+                  value={formData.shortDescription}
+                  onChange={(e) => setFormData(prev => ({ ...prev, shortDescription: e.target.value }))}
+                  placeholder="Brief description for product cards"
+                  rows={2}
+                />
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="description">Full Description *</Label>
+                <Textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                  placeholder="Detailed product description"
+                  rows={4}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="price">Price ($) *</Label>
+                  <Input
+                    id="price"
+                    type="number"
+                    step="0.01"
+                    value={formData.price}
+                    onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
+                    placeholder="68.00"
+                  />
+                </div>
+
+                <div className="grid gap-2">
+                  <Label htmlFor="category">Category *</Label>
+                  <Select value={formData.category} onValueChange={(value) => setFormData(prev => ({ ...prev, category: value as Category }))}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map(cat => (
+                        <SelectItem key={cat} value={cat} className="capitalize">
+                          {cat}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="skinType">Skin Type *</Label>
+                <Select value={formData.skinType} onValueChange={(value) => setFormData(prev => ({ ...prev, skinType: value as SkinType }))}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {skinTypes.map(type => (
+                      <SelectItem key={type} value={type} className="capitalize">
+                        {type}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid gap-2">
+                <Label>Images</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={imageInput}
+                    onChange={(e) => setImageInput(e.target.value)}
+                    placeholder="Enter image URL"
+                    onKeyPress={(e) => e.key === 'Enter' && handleAddImage()}
+                  />
+                  <Button type="button" onClick={handleAddImage} variant="outline">
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {formData.images.map((img, index) => (
+                    <Badge key={index} variant="secondary" className="pr-1">
+                      {img.substring(0, 30)}...
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-4 w-4 ml-1"
+                        onClick={() => handleRemoveImage(index)}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid gap-2">
+                <Label>Ingredients</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={ingredientInput}
+                    onChange={(e) => setIngredientInput(e.target.value)}
+                    placeholder="Enter ingredient name"
+                    onKeyPress={(e) => e.key === 'Enter' && handleAddIngredient()}
+                  />
+                  <Button type="button" onClick={handleAddIngredient} variant="outline">
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {formData.ingredients.map((ingredient, index) => (
+                    <Badge key={index} variant="secondary" className="pr-1">
+                      {ingredient}
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-4 w-4 ml-1"
+                        onClick={() => handleRemoveIngredient(index)}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex gap-6">
+                <div className="flex items-center gap-2">
+                  <Switch
+                    id="inStock"
+                    checked={formData.inStock}
+                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, inStock: checked }))}
+                  />
+                  <Label htmlFor="inStock">In Stock</Label>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Switch
+                    id="isBestSeller"
+                    checked={formData.isBestSeller}
+                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isBestSeller: checked }))}
+                  />
+                  <Label htmlFor="isBestSeller">Best Seller</Label>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Switch
+                    id="isNew"
+                    checked={formData.isNew}
+                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isNew: checked }))}
+                  />
+                  <Label htmlFor="isNew">New Product</Label>
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => {
+                setIsAddDialogOpen(false);
+                setEditProduct(null);
+                resetForm();
+              }}>
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleSubmit}
+                disabled={!formData.name || !formData.price || createProductMutation.isPending || updateProductMutation.isPending}
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+              >
+                {editProduct ? "Update Product" : "Create Product"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={!!deleteProductId} onOpenChange={() => setDeleteProductId(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete the product
+                from your catalog.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDelete}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
+    </motion.div>
+  );
+}
