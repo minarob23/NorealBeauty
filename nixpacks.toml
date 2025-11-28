@@ -1,0 +1,8 @@
+[build]
+# Disable npm cache mounting to avoid EBUSY errors during docker build
+cmds = [
+  "npm ci --omit=dev",
+  "npm run build",
+  "npm run db:push",
+  "npm run db:migrate-products"
+]
