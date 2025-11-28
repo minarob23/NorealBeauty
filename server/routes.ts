@@ -560,6 +560,14 @@ export async function registerRoutes(
       const authorId = admin.sub;
       const authorName = admin.adminName || admin.ownerName || `${admin.first_name} ${admin.last_name}`;
 
+      let publishedAt: Date | null | undefined = null;
+      if (published) {
+        if (req.body.publishedAt) {
+          publishedAt = typeof req.body.publishedAt === "string" ? new Date(req.body.publishedAt) : req.body.publishedAt;
+        } else {
+          publishedAt = new Date();
+        }
+      }
       const post = await storage.createBlogPost({
         title,
         slug,
@@ -569,7 +577,7 @@ export async function registerRoutes(
         authorId,
         authorName,
         published: published || false,
-        publishedAt: published ? new Date() : null,
+        publishedAt,
         tags: tags || [],
       });
 
