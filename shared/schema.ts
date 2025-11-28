@@ -269,7 +269,7 @@ export const blogPostSchema = z.object({
   authorId: z.string(),
   authorName: z.string(),
   published: z.boolean(),
-  publishedAt: z.string().optional().nullable(),
+  publishedAt: z.date().optional().nullable(),
   tags: z.array(z.string()).optional(),
   viewCount: z.number().default(0),
   createdAt: z.string(),
