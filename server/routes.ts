@@ -569,7 +569,7 @@ export async function registerRoutes(
         authorId,
         authorName,
         published: published || false,
-        publishedAt: published ? new Date().toISOString() : null,
+        publishedAt: published ? new Date() : null,
         tags: tags || [],
       });
 
@@ -600,7 +600,11 @@ export async function registerRoutes(
 
       // If publishing, set publishedAt
       if (updates.published && !updates.publishedAt) {
-        updates.publishedAt = new Date().toISOString();
+        updates.publishedAt = new Date();
+      }
+      // If publishedAt is a string, convert to Date
+      if (typeof updates.publishedAt === "string") {
+        updates.publishedAt = new Date(updates.publishedAt);
       }
 
       const post = await storage.updateBlogPost(id, updates);
