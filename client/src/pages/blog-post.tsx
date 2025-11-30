@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Footer } from "@/components/footer";
 import { useAppStore } from "@/lib/store";
 import { getTranslations } from "@/lib/i18n";
-import { blogPosts } from "./blog";
+import { useQuery } from "@tanstack/react-query";
 
 import heroImage from "@assets/stock_images/beautiful_woman_appl_2fded0df.jpg";
 import productImage1 from "@assets/stock_images/luxury_skincare_prod_e5577988.jpg";
@@ -17,12 +17,35 @@ import productImage3 from "@assets/stock_images/luxury_skincare_prod_3ee0d53d.jp
 
 const blogImages = [heroImage, productImage1, productImage2, productImage3];
 
+interface BlogPost {
+  id: string;
+  title: string;
+  slug: string;
+  content: string;
+  excerpt?: string;
+  coverImage?: string;
+  authorId: string;
+  authorName: string;
+  published: boolean;
+  publishedAt?: string;
+  tags?: string[];
+  viewCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export default function BlogPost() {
   const { id } = useParams<{ id: string }>();
   const { language } = useAppStore();
   const t = getTranslations(language);
 
-  const posts = blogPosts[language];
+  // Fetch blog posts from API
+  const { data: allPosts = [], isLoading } = useQuery<BlogPost[]>({
+    queryKey: ["/api/admin/blogs"],
+  });
+
+  // Filter only published posts
+  const posts = allPosts.filter(post => post.published);
   const post = posts.find((p) => p.id === id);
   const relatedPosts = posts.filter((p) => p.id !== id).slice(0, 3);
 
@@ -51,6 +74,14 @@ export default function BlogPost() {
   };
 
   const label = labels[language];
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center py-12">Loading blog post...</div>
+      </div>
+    );
+  }
 
   if (!post) {
     return (
@@ -106,7 +137,7 @@ export default function BlogPost() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <Badge className="mb-4">{post.category}</Badge>
+            <Badge className="mb-4">{post.tags && post.tags[0]}</Badge>
             <h1 className="mb-6 font-serif text-3xl font-light tracking-wide md:text-4xl lg:text-5xl">
               {post.title}
             </h1>
@@ -114,21 +145,23 @@ export default function BlogPost() {
             <div className="mb-8 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
               <div className="flex items-center gap-1">
                 <User className="h-4 w-4" />
-                {post.author}
+                {post.authorName}
               </div>
               <div className="flex items-center gap-1">
                 <Clock className="h-4 w-4" />
-                {post.readTime}
+                {new Date(post.createdAt).toLocaleDateString()}
               </div>
-              <div className="flex items-center gap-1">
-                <Tag className="h-4 w-4" />
-                {post.category}
-              </div>
+              {post.tags && post.tags.length > 0 && (
+                <div className="flex items-center gap-1">
+                  <Tag className="h-4 w-4" />
+                  {post.tags[0]}
+                </div>
+              )}
               <span className="hidden sm:inline">•</span>
-              <span>{new Date(post.date).toLocaleDateString(language === "en" ? "en-US" : language === "fr" ? "fr-FR" : "es-ES", { 
-                year: "numeric", 
-                month: "long", 
-                day: "numeric" 
+              <span>{new Date(post.createdAt).toLocaleDateString(language === "en" ? "en-US" : language === "fr" ? "fr-FR" : "es-ES", {
+                year: "numeric",
+                month: "long",
+                day: "numeric"
               })}</span>
             </div>
           </motion.div>
@@ -153,7 +186,7 @@ export default function BlogPost() {
             className="prose prose-lg dark:prose-invert max-w-none"
           >
             <p className="lead text-xl text-muted-foreground mb-8">{post.excerpt}</p>
-            
+
             {post.content.split('\n\n').map((paragraph, index) => {
               if (paragraph.startsWith('**') && paragraph.endsWith('**')) {
                 return (
@@ -198,7 +231,7 @@ export default function BlogPost() {
                 <User className="h-6 w-6 text-muted-foreground" />
               </div>
               <div>
-                <p className="font-medium">{post.author}</p>
+                <p className="font-medium">{post.authorName}</p>
                 <p className="text-sm text-muted-foreground">Skincare Expert</p>
               </div>
             </div>
@@ -230,12 +263,12 @@ export default function BlogPost() {
                     </div>
                     <CardContent className="p-6">
                       <Badge variant="secondary" className="mb-3">
-                        {relatedPost.category}
+                        {relatedPost.tags && relatedPost.tags[0]}
                       </Badge>
                       <h3 className="mb-2 font-serif text-lg font-medium group-hover:text-primary transition-colors line-clamp-2">
                         {relatedPost.title}
                       </h3>
-                      <p className="text-sm text-muted-foreground">{relatedPost.readTime}</p>
+                      <p className="text-sm text-muted-foreground">{new Date(relatedPost.createdAt).toLocaleDateString()}</p>
                     </CardContent>
                   </Card>
                 </Link>

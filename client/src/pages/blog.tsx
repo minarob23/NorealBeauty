@@ -118,7 +118,12 @@ export default function Blog() {
 
         <div className="mb-8 flex flex-wrap justify-center gap-2">
           {cats.map((cat) => (
-            <Button key={cat} variant="outline" size="sm">
+            <Button
+              key={cat}
+              variant={selectedCategory === cat ? "default" : "outline"}
+              size="sm"
+              onClick={() => setSelectedCategory(cat)}
+            >
               {cat}
             </Button>
           ))}
