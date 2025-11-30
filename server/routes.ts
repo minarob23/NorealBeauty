@@ -71,7 +71,7 @@ export async function registerRoutes(
       // Validate allowed fields
       const allowedFields = ['firstName', 'lastName', 'isAdmin', 'emailVerified'];
       const filteredUpdates: any = {};
-      
+
       for (const key of allowedFields) {
         if (key in updates) {
           filteredUpdates[key] = updates[key];
@@ -79,7 +79,7 @@ export async function registerRoutes(
       }
 
       const updatedUser = await storage.updateUser(id, filteredUpdates);
-      
+
       if (!updatedUser) {
         return res.status(404).json({ message: "User not found" });
       }
@@ -108,7 +108,7 @@ export async function registerRoutes(
   app.delete("/api/admin/users/:id", isAdmin, async (req: any, res) => {
     try {
       const { id } = req.params;
-      
+
       // Prevent deleting yourself
       const currentUser = req.user;
       if (currentUser.claims.sub === id) {
@@ -117,9 +117,9 @@ export async function registerRoutes(
 
       // Get user details before deleting
       const userToDelete = await storage.getUser(id);
-      
+
       await storage.deleteUser(id);
-      
+
       // Log admin activity
       const admin = currentUser.claims;
       await logAdminActivity(
@@ -132,7 +132,7 @@ export async function registerRoutes(
         { deletedEmail: userToDelete?.email },
         req
       );
-      
+
       res.json({ success: true, message: "User deleted successfully" });
     } catch (error) {
       console.error("Failed to delete user:", error);
@@ -213,7 +213,7 @@ export async function registerRoutes(
       // Create admin user
       const userId = randomUUID();
       const displayName = adminName || `${firstName} ${lastName}`;
-      
+
       await storage.upsertUser({
         id: userId,
         email,
@@ -236,7 +236,7 @@ export async function registerRoutes(
         "admin_create",
         "admin",
         userId,
-        { 
+        {
           adminEmail: email,
           adminRole,
           adminName: displayName
@@ -244,8 +244,8 @@ export async function registerRoutes(
         req
       );
 
-      res.json({ 
-        success: true, 
+      res.json({
+        success: true,
         message: `Admin account created successfully for ${email}`,
         admin: {
           id: userId,
@@ -269,7 +269,7 @@ export async function registerRoutes(
 
       // Get admin details before deleting
       const adminToDelete = await storage.getUser(id);
-      
+
       if (!adminToDelete) {
         return res.status(404).json({ message: "Admin not found" });
       }
@@ -289,7 +289,7 @@ export async function registerRoutes(
         "admin_delete",
         "admin",
         id,
-        { 
+        {
           deletedEmail: adminToDelete.email,
           deletedRole: adminToDelete.adminRole
         },
@@ -387,7 +387,7 @@ export async function registerRoutes(
 
       // Get complete order with items
       const orderItems = await storage.getOrderItems(order.id);
-      
+
       res.status(201).json({ ...order, items: orderItems, customerInfo });
     } catch (error) {
       console.error("Failed to create order:", error);
@@ -412,9 +412,9 @@ export async function registerRoutes(
         userFirstName: users.firstName,
         userLastName: users.lastName,
       })
-      .from(orders)
-      .leftJoin(users, eq(orders.userId, users.id))
-      .orderBy(sql`${orders.createdAt} DESC`);
+        .from(orders)
+        .leftJoin(users, eq(orders.userId, users.id))
+        .orderBy(sql`${orders.createdAt} DESC`);
 
       res.json(allOrders);
     } catch (error) {
@@ -551,7 +551,7 @@ export async function registerRoutes(
   app.post("/api/admin/blogs", isAdmin, async (req: any, res) => {
     try {
       const { title, slug, content, excerpt, coverImage, published, tags } = req.body;
-      
+
       if (!title || !slug || !content) {
         return res.status(400).json({ message: "Title, slug, and content are required" });
       }
@@ -645,7 +645,7 @@ export async function registerRoutes(
   app.delete("/api/admin/blogs/:id", isAdmin, async (req: any, res) => {
     try {
       const { id } = req.params;
-      
+
       const post = await storage.getBlogPost(id);
       await storage.deleteBlogPost(id);
 

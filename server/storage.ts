@@ -544,13 +544,6 @@ export class MemStorage implements IStorage {
 
   async upsertUser(userData: UpsertUser): Promise<User> {
     try {
-      console.log("[Storage] Upserting user with data:", {
-        id: userData.id,
-        email: userData.email,
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-      });
-
       const [user] = await db
         .insert(users)
         .values(userData)
@@ -562,11 +555,6 @@ export class MemStorage implements IStorage {
           },
         })
         .returning();
-
-      console.log("[Storage] Upsert successful, returned user:", {
-        id: user?.id,
-        email: user?.email,
-      });
 
       return user;
     } catch (error) {

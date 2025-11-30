@@ -70,8 +70,6 @@ export async function setupAuth(app: Express) {
             const googleId = profile.id;
             const email = profile.emails?.[0]?.value;
 
-            console.log("Google OAuth Strategy - Processing user:", { googleId, email });
-
             // Check if user already exists by email
             const existingUser = await storage.getUserByEmail(email);
             let userId: string;
@@ -80,14 +78,6 @@ export async function setupAuth(app: Express) {
               // New user - create with Google ID
               userId = googleId;
               const verificationToken = randomUUID();
-
-              console.log("Creating new user with data:", {
-                id: userId,
-                email,
-                firstName: profile.name?.givenName,
-                lastName: profile.name?.familyName,
-                profileImageUrl: profile.photos?.[0]?.value,
-              });
 
               const createdUser = await storage.upsertUser({
                 id: userId,
@@ -99,18 +89,9 @@ export async function setupAuth(app: Express) {
                 emailVerified: false,
                 verificationToken: verificationToken,
               });
-
-              console.log("User created successfully:", createdUser?.id);
-
-              // Store verification token in session for the callback
-              (req.session as any).verificationToken = verificationToken;
-              (req.session as any).userEmail = email;
-              (req.session as any).isNewGoogleUser = true;
             } else {
               // Existing user - use their database ID
               userId = existingUser.id;
-
-              console.log("Updating existing user:", userId);
 
               // Update user profile and login stats
               await storage.updateUser(userId, {
@@ -121,8 +102,6 @@ export async function setupAuth(app: Express) {
               });
 
               await storage.updateLoginStats(userId);
-
-              console.log("Updated existing user successfully");
             }
 
             const user = {
@@ -138,7 +117,6 @@ export async function setupAuth(app: Express) {
               expires_at: Math.floor(Date.now() / 1000) + 3600,
             };
 
-            console.log("Returning user object to passport:", user.claims);
             done(null, user);
           } catch (error) {
             console.error("Error in Google OAuth strategy:", error);
@@ -322,20 +300,13 @@ export async function setupAuth(app: Express) {
         failureRedirect: "/login",
       }),
       async (req, res) => {
-        console.log("=== Google OAuth Callback ===");
-        console.log("User from passport:", req.user);
-        console.log("Session ID:", req.sessionID);
-        console.log("Is authenticated (before login):", req.isAuthenticated());
-
         try {
           // Get user ID from the passport user object
           const userId = (req.user as any)?.claims?.sub;
-          console.log("User ID from claims:", userId);
           
           if (userId) {
             // Fetch fresh user data from database
             const freshUserData = await storage.getUser(userId);
-            console.log("Fresh user data from DB:", freshUserData);
             
             // Update session user with fresh data if found
             if (freshUserData) {
@@ -351,9 +322,6 @@ export async function setupAuth(app: Express) {
                 refresh_token: (req.user as any)?.refresh_token,
                 expires_at: (req.user as any)?.expires_at,
               };
-              console.log("Updated user object with DB data");
-            } else {
-              console.warn("User not found in database, using passport data");
             }
           }
 
@@ -364,18 +332,12 @@ export async function setupAuth(app: Express) {
               return res.redirect("/login?error=session_failed");
             }
 
-            console.log("req.login() successful");
-            console.log("Is authenticated (after login):", req.isAuthenticated());
-
             // Explicitly save the session before redirecting to ensure it persists
             req.session.save((saveErr) => {
               if (saveErr) {
                 console.error("Failed to save session after Google OAuth:", saveErr);
                 return res.redirect("/login?error=session_save_failed");
               }
-
-              console.log("Session saved successfully");
-              console.log("=== Redirecting to home ===");
 
               // Session established and saved successfully, redirect to home
               res.redirect("/");
