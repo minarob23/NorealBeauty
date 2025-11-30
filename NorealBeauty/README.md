@@ -1,0 +1,1 @@
+NorealBeauty is a full-stack web application for beauty and skincare businesses, featuring a dynamic product catalog, secure user authentication, and easy checkout. Admins can manage products, track sales, and analyze customer data. With smooth UI animations, mobile optimization, and robust security, it provides a seamless shopping experience.

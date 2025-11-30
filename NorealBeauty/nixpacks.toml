@@ -1,0 +1,10 @@
+[build]
+# Clear npm cache before install to prevent EBUSY errors
+cmds = [
+  "npm cache clean --force",
+  "rm -rf /app/node_modules/.cache 2>/dev/null || true",
+  "npm ci --omit=dev",
+  "npm run build",
+  "npm run db:push",
+  "npm run db:migrate-products"
+]

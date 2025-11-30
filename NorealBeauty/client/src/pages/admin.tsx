@@ -63,6 +63,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import type { Product, Order, Category, SkinType } from "@shared/schema";
 import AdminUsers from "./admin-users";
+import ProductImageUpload from "@/components/product-image-upload";
 
 const categories: Category[] = [
   "moisturizers",
@@ -85,10 +86,7 @@ export default function Admin() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editProduct, setEditProduct] = useState<Product | null>(null);
   const [deleteProductId, setDeleteProductId] = useState<string | null>(null);
-  const [imageInput, setImageInput] = useState("");
   const [ingredientInput, setIngredientInput] = useState("");
-  const [uploadingImages, setUploadingImages] = useState<boolean>(false);
-  const [uploadingImages, setUploadingImages] = useState<boolean>(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -211,88 +209,11 @@ export default function Admin() {
       isBestSeller: false,
       isNew: false,
     });
-    setImageInput("");
     setIngredientInput("");
   };
 
-  const handleImageUpload = async (files: FileList | null) => {
-    if (!files) return;
-    
-    setUploadingImages(true);
-    try {
-      for (const file of Array.from(files)) {
-        const formDataToSend = new FormData();
-        formDataToSend.append('file', file);
-        
-        const response = await fetch('/api/upload-image', {
-          method: 'POST',
-          credentials: 'include',
-          body: formDataToSend,
-        });
-        
-        if (!response.ok) throw new Error('Failed to upload image');
-        const data = await response.json();
-        
-        setFormData(prev => ({
-          ...prev,
-          images: [...prev.images, data.url]
-        }));
-      }
-      toast({ title: "Success", description: "Images uploaded successfully" });
-    } catch (error) {
-      toast({ 
-        variant: "destructive", 
-        title: "Error", 
-        description: "Failed to upload image. Please try again." 
-      });
-    } finally {
-      setUploadingImages(false);
-    }
-  };
-
-  const handleImageUpload = async (files: FileList | null) => {
-    if (!files) return;
-    
-    setUploadingImages(true);
-    try {
-      for (const file of Array.from(files)) {
-        const formDataToSend = new FormData();
-        formDataToSend.append('file', file);
-        
-        const response = await fetch('/api/upload-image', {
-          method: 'POST',
-          credentials: 'include',
-          body: formDataToSend,
-        });
-        
-        if (!response.ok) throw new Error('Failed to upload image');
-        const data = await response.json();
-        
-        setFormData(prev => ({
-          ...prev,
-          images: [...prev.images, data.url]
-        }));
-      }
-      toast({ title: "Success", description: "Images uploaded successfully" });
-    } catch (error) {
-      toast({ 
-        variant: "destructive", 
-        title: "Error", 
-        description: "Failed to upload image. Please try again." 
-      });
-    } finally {
-      setUploadingImages(false);
-    }
-  };
-
   const handleAddImage = () => {
-    if (imageInput.trim()) {
-      setFormData(prev => ({
-        ...prev,
-        images: [...prev.images, imageInput.trim()]
-      }));
-      setImageInput("");
-    }
+    // This function is now handled by the ProductImageUpload component
   };
 
   const handleRemoveImage = (index: number) => {
@@ -808,51 +729,11 @@ export default function Admin() {
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label>Product Images *</Label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-purple-500 transition-colors cursor-pointer">
-                  <input
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    onChange={(e) => handleImageUpload(e.target.files)}
-                    disabled={uploadingImages}
-                    className="hidden"
-                    id="image-upload"
-                  />
-                  <label htmlFor="image-upload" className="cursor-pointer block text-center">
-                    <div className="flex flex-col items-center gap-2">
-                      <svg className="w-8 h-8 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                      </svg>
-                      <p className="text-sm font-medium">
-                        {uploadingImages ? "Uploading..." : "Click to upload images or drag and drop"}
-                      </p>
-                      <p className="text-xs text-muted-foreground">PNG, JPG, GIF up to 10MB</p>
-                    </div>
-                  </label>
-                </div>
-                <div className="flex flex-wrap gap-2 mt-4">
-                  {formData.images.map((img, index) => (
-                    <div key={index} className="relative group">
-                      <img 
-                        src={img} 
-                        alt={`Product ${index + 1}`}
-                        className="h-20 w-20 object-cover rounded-lg border border-gray-200"
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="absolute -top-2 -right-2 h-6 w-6 bg-red-500 hover:bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => handleRemoveImage(index)}
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              {/* Product Images - Moved to Top */}
+              <ProductImageUpload 
+                images={formData.images}
+                onImagesChange={(images) => setFormData(prev => ({ ...prev, images }))}
+              />
 
               <div className="grid gap-2">
                 <Label htmlFor="name">Product Name *</Label>
