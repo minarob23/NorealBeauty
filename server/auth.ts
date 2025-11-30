@@ -67,14 +67,16 @@ export async function setupAuth(app: Express) {
         },
         async (req: any, accessToken: string, refreshToken: string, profile: any, done: any) => {
           try {
-            const userId = profile.id;
+            const googleId = profile.id;
             const email = profile.emails?.[0]?.value;
 
-            // Check if user already exists
+            // Check if user already exists by email
             const existingUser = await storage.getUserByEmail(email);
+            let userId: string;
 
             if (!existingUser) {
-              // New user - create with verification token
+              // New user - create with Google ID
+              userId = googleId;
               const verificationToken = randomUUID();
 
               await storage.upsertUser({
@@ -88,13 +90,27 @@ export async function setupAuth(app: Express) {
                 verificationToken: verificationToken,
               });
 
+              console.log("Created new Google user:", userId);
+
               // Store verification token in session for the callback
               (req.session as any).verificationToken = verificationToken;
               (req.session as any).userEmail = email;
               (req.session as any).isNewGoogleUser = true;
             } else {
-              // Existing user - just update login stats
+              // Existing user - use their database ID
+              userId = existingUser.id;
+              
+              // Update user profile and login stats
+              await storage.updateUser(userId, {
+                firstName: profile.name?.givenName,
+                lastName: profile.name?.familyName,
+                profileImageUrl: profile.photos?.[0]?.value,
+                authProvider: "google",
+              });
+              
               await storage.updateLoginStats(userId);
+              
+              console.log("Updated existing Google user:", userId);
             }
 
             const user = {
@@ -112,6 +128,7 @@ export async function setupAuth(app: Express) {
 
             done(null, user);
           } catch (error) {
+            console.error("Error in Google OAuth strategy:", error);
             done(error, null);
           }
         }
@@ -298,13 +315,16 @@ export async function setupAuth(app: Express) {
         console.log("Is authenticated (before login):", req.isAuthenticated());
 
         try {
-          // Get fresh user data from database to ensure all fields are available
+          // Get user ID from the passport user object
           const userId = (req.user as any)?.claims?.sub;
+          console.log("User ID from claims:", userId);
+          
           if (userId) {
+            // Fetch fresh user data from database
             const freshUserData = await storage.getUser(userId);
             console.log("Fresh user data from DB:", freshUserData);
             
-            // Update session user with fresh data
+            // Update session user with fresh data if found
             if (freshUserData) {
               (req.user as any) = {
                 claims: {
@@ -318,6 +338,9 @@ export async function setupAuth(app: Express) {
                 refresh_token: (req.user as any)?.refresh_token,
                 expires_at: (req.user as any)?.expires_at,
               };
+              console.log("Updated user object with DB data");
+            } else {
+              console.warn("User not found in database, using passport data");
             }
           }
 
@@ -339,7 +362,6 @@ export async function setupAuth(app: Express) {
               }
 
               console.log("Session saved successfully");
-              console.log("Session data:", req.session);
               console.log("=== Redirecting to home ===");
 
               // Session established and saved successfully, redirect to home
