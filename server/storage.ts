@@ -344,11 +344,11 @@ export class MemStorage implements IStorage {
   constructor() {
     this.products = new Map();
     this.reviews = new Map();
-    
+
     sampleProducts.forEach((product) => {
       this.products.set(product.id, product);
     });
-    
+
     sampleReviews.forEach((review) => {
       this.reviews.set(review.id, review);
     });
@@ -497,7 +497,7 @@ export class MemStorage implements IStorage {
       const reviews = await this.getProductReviews(insertReview.productId);
       const totalRating = reviews.reduce((sum, r) => sum + r.rating, 0);
       const avgRating = totalRating / reviews.length;
-      
+
       this.products.set(product.id, {
         ...product,
         rating: Math.round(avgRating * 10) / 10,
@@ -511,7 +511,7 @@ export class MemStorage implements IStorage {
   async updateReviewHelpful(reviewId: string): Promise<Review | undefined> {
     const review = this.reviews.get(reviewId);
     if (!review) return undefined;
-    
+
     const updated: Review = { ...review, helpful: review.helpful + 1 };
     this.reviews.set(reviewId, updated);
     return updated;
@@ -603,7 +603,6 @@ export class MemStorage implements IStorage {
       console.error("[Storage] Failed to update login stats:", error);
       throw error;
     }
-  }
   }
 
   async getUserStats(): Promise<{
