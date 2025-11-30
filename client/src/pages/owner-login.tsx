@@ -8,30 +8,38 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Footer } from "@/components/footer";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function OwnerLogin() {
   const { toast } = useToast();
+  const { user, isLoading: authLoading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
 
-  // Automatically log out when accessing owner login page
+  // Check if already logged in as owner and redirect to dashboard
   useEffect(() => {
-    const performLogout = async () => {
-      try {
-        await fetch("/api/logout", {
+    if (!authLoading && user) {
+      // Check if user is the owner (noreen@norealbeauty.com or Noreen Nageh)
+      const isOwner =
+        user.email?.toLowerCase() === "noreen@norealbeauty.com" ||
+        (user.firstName === "Noreen" && user.lastName === "Nageh") ||
+        user.isOwner;
+
+      if (isOwner) {
+        // User is already logged in as owner, redirect to dashboard
+        window.location.href = "/owner/dashboard";
+      } else if (user) {
+        // User is logged in but not as owner, log them out
+        fetch("/api/logout", {
           method: "GET",
           credentials: "include",
-        });
-      } catch (error) {
-        // Silently handle logout errors
-        console.log("Logout on owner page load:", error);
+        }).catch(err => console.log("Logout error:", err));
       }
-    };
-    performLogout();
-  }, []);
+    }
+  }, [user, authLoading]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,6 +81,18 @@ export default function OwnerLogin() {
       setIsLoading(false);
     }
   };
+
+  // Show loading while checking authentication
+  if (authLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8 flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-purple-600 border-r-transparent"></div>
+          <p className="mt-4 text-muted-foreground">Checking authentication...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <motion.div
