@@ -69,14 +69,14 @@ export async function setupAuth(app: Express) {
           try {
             const userId = profile.id;
             const email = profile.emails?.[0]?.value;
-            
+
             // Check if user already exists
             const existingUser = await storage.getUserByEmail(email);
-            
+
             if (!existingUser) {
               // New user - create with verification token
               const verificationToken = randomUUID();
-              
+
               await storage.upsertUser({
                 id: userId,
                 email: email,
@@ -87,7 +87,7 @@ export async function setupAuth(app: Express) {
                 emailVerified: false,
                 verificationToken: verificationToken,
               });
-              
+
               // Store verification token in session for the callback
               (req.session as any).verificationToken = verificationToken;
               (req.session as any).userEmail = email;
@@ -96,7 +96,7 @@ export async function setupAuth(app: Express) {
               // Existing user - just update login stats
               await storage.updateLoginStats(userId);
             }
-            
+
             const user = {
               claims: {
                 sub: userId,
@@ -109,7 +109,7 @@ export async function setupAuth(app: Express) {
               refresh_token: refreshToken,
               expires_at: Math.floor(Date.now() / 1000) + 3600,
             };
-            
+
             done(null, user);
           } catch (error) {
             done(error, null);
@@ -130,7 +130,7 @@ export async function setupAuth(app: Express) {
       async (email: string, password: string, done: any) => {
         try {
           const user = await storage.getUserByEmail(email);
-          
+
           if (!user || !user.password) {
             return done(null, false, { message: "Invalid email or password" });
           }
@@ -141,7 +141,7 @@ export async function setupAuth(app: Express) {
           }
 
           const isValidPassword = await bcrypt.compare(password, user.password);
-          
+
           if (!isValidPassword) {
             return done(null, false, { message: "Invalid email or password" });
           }
@@ -178,7 +178,7 @@ export async function setupAuth(app: Express) {
       async (email: string, password: string, done: any) => {
         try {
           const user = await storage.getUserByEmail(email);
-          
+
           if (!user) {
             return done(null, false, { message: "Invalid email or password" });
           }
@@ -192,7 +192,7 @@ export async function setupAuth(app: Express) {
           }
 
           const isValidPassword = await bcrypt.compare(password, user.password);
-          
+
           if (!isValidPassword) {
             return done(null, false, { message: "Invalid email or password" });
           }
@@ -232,7 +232,7 @@ export async function setupAuth(app: Express) {
       async (email: string, password: string, done: any) => {
         try {
           const user = await storage.getUserByEmail(email);
-          
+
           if (!user) {
             return done(null, false, { message: "Invalid email or password" });
           }
@@ -246,7 +246,7 @@ export async function setupAuth(app: Express) {
           }
 
           const isValidPassword = await bcrypt.compare(password, user.password);
-          
+
           if (!isValidPassword) {
             return done(null, false, { message: "Invalid email or password" });
           }
@@ -292,11 +292,64 @@ export async function setupAuth(app: Express) {
         failureRedirect: "/login",
       }),
       async (req, res) => {
-        const session = req.session as any;
-        
-        // Check if this is a new Google user who needs verification
-        // Always redirect to home after successful login
-        res.redirect("/");
+        console.log("=== Google OAuth Callback ===");
+        console.log("User from passport:", req.user);
+        console.log("Session ID:", req.sessionID);
+        console.log("Is authenticated (before login):", req.isAuthenticated());
+
+        try {
+          // Get fresh user data from database to ensure all fields are available
+          const userId = (req.user as any)?.claims?.sub;
+          if (userId) {
+            const freshUserData = await storage.getUser(userId);
+            console.log("Fresh user data from DB:", freshUserData);
+            
+            // Update session user with fresh data
+            if (freshUserData) {
+              (req.user as any) = {
+                claims: {
+                  sub: freshUserData.id,
+                  email: freshUserData.email,
+                  given_name: freshUserData.firstName,
+                  family_name: freshUserData.lastName,
+                  picture: freshUserData.profileImageUrl,
+                },
+                access_token: (req.user as any)?.access_token,
+                refresh_token: (req.user as any)?.refresh_token,
+                expires_at: (req.user as any)?.expires_at,
+              };
+            }
+          }
+
+          // Explicitly establish the session by calling req.login()
+          req.login(req.user!, (err) => {
+            if (err) {
+              console.error("Failed to establish session after Google OAuth:", err);
+              return res.redirect("/login?error=session_failed");
+            }
+
+            console.log("req.login() successful");
+            console.log("Is authenticated (after login):", req.isAuthenticated());
+
+            // Explicitly save the session before redirecting to ensure it persists
+            req.session.save((saveErr) => {
+              if (saveErr) {
+                console.error("Failed to save session after Google OAuth:", saveErr);
+                return res.redirect("/login?error=session_save_failed");
+              }
+
+              console.log("Session saved successfully");
+              console.log("Session data:", req.session);
+              console.log("=== Redirecting to home ===");
+
+              // Session established and saved successfully, redirect to home
+              res.redirect("/");
+            });
+          });
+        } catch (error) {
+          console.error("Error in Google OAuth callback:", error);
+          res.redirect("/login?error=callback_error");
+        }
       }
     );
   }
@@ -349,8 +402,8 @@ export async function setupAuth(app: Express) {
       });
 
       // Return success
-      res.json({ 
-        success: true, 
+      res.json({
+        success: true,
         message: "Account created successfully! You can now log in.",
       });
     } catch (error) {
@@ -390,7 +443,7 @@ export async function setupAuth(app: Express) {
         if (loginErr) {
           return res.status(500).json({ message: "Login failed" });
         }
-        
+
         // Log admin login activity
         await logAdminActivity(
           user.claims.sub,
@@ -402,7 +455,7 @@ export async function setupAuth(app: Express) {
           { role: user.claims.adminRole },
           req
         );
-        
+
         return res.json({ success: true, user });
       });
     })(req, res, next);
@@ -421,7 +474,7 @@ export async function setupAuth(app: Express) {
         if (loginErr) {
           return res.status(500).json({ message: "Login failed" });
         }
-        
+
         // Log owner login activity
         await logAdminActivity(
           user.claims.sub,
@@ -433,7 +486,7 @@ export async function setupAuth(app: Express) {
           { role: "owner" },
           req
         );
-        
+
         return res.json({ success: true, user });
       });
     })(req, res, next);
@@ -462,7 +515,7 @@ export async function setupAuth(app: Express) {
       }
 
       const user = await storage.getUserByEmail(email);
-      
+
       // Always return success to prevent email enumeration
       if (!user) {
         return res.json({ success: true, message: "If an account exists, a reset link has been sent" });
@@ -500,7 +553,7 @@ export const isAdmin: RequestHandler = async (req, res, next) => {
   try {
     const userId = user.claims.sub;
     const dbUser = await storage.getUser(userId);
-    
+
     // Allow both admins and owners
     if (!dbUser?.isAdmin && !dbUser?.isOwner) {
       return res.status(403).json({ message: "Access denied" });
