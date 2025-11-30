@@ -22,7 +22,7 @@ export default function OwnerLogin() {
     const performLogout = async () => {
       try {
         await fetch("/api/logout", {
-          method: "POST",
+          method: "GET",
           credentials: "include",
         });
       } catch (error) {
