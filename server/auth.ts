@@ -70,6 +70,8 @@ export async function setupAuth(app: Express) {
             const googleId = profile.id;
             const email = profile.emails?.[0]?.value;
 
+            console.log("Google OAuth Strategy - Processing user:", { googleId, email });
+
             // Check if user already exists by email
             const existingUser = await storage.getUserByEmail(email);
             let userId: string;
@@ -79,7 +81,15 @@ export async function setupAuth(app: Express) {
               userId = googleId;
               const verificationToken = randomUUID();
 
-              await storage.upsertUser({
+              console.log("Creating new user with data:", {
+                id: userId,
+                email,
+                firstName: profile.name?.givenName,
+                lastName: profile.name?.familyName,
+                profileImageUrl: profile.photos?.[0]?.value,
+              });
+
+              const createdUser = await storage.upsertUser({
                 id: userId,
                 email: email,
                 firstName: profile.name?.givenName,
@@ -90,7 +100,7 @@ export async function setupAuth(app: Express) {
                 verificationToken: verificationToken,
               });
 
-              console.log("Created new Google user:", userId);
+              console.log("User created successfully:", createdUser?.id);
 
               // Store verification token in session for the callback
               (req.session as any).verificationToken = verificationToken;
@@ -99,7 +109,9 @@ export async function setupAuth(app: Express) {
             } else {
               // Existing user - use their database ID
               userId = existingUser.id;
-              
+
+              console.log("Updating existing user:", userId);
+
               // Update user profile and login stats
               await storage.updateUser(userId, {
                 firstName: profile.name?.givenName,
@@ -107,10 +119,10 @@ export async function setupAuth(app: Express) {
                 profileImageUrl: profile.photos?.[0]?.value,
                 authProvider: "google",
               });
-              
+
               await storage.updateLoginStats(userId);
-              
-              console.log("Updated existing Google user:", userId);
+
+              console.log("Updated existing user successfully");
             }
 
             const user = {
@@ -126,6 +138,7 @@ export async function setupAuth(app: Express) {
               expires_at: Math.floor(Date.now() / 1000) + 3600,
             };
 
+            console.log("Returning user object to passport:", user.claims);
             done(null, user);
           } catch (error) {
             console.error("Error in Google OAuth strategy:", error);
