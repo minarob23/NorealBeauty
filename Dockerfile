@@ -5,10 +5,8 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies with cache mount to a safe location
-# Use npm's cache directory instead of node_modules/.cache
-RUN --mount=type=cache,id=npm,target=/root/.npm \
-    npm ci --omit=dev
+# Install dependencies
+RUN npm ci --omit=dev
 
 # Copy application code
 COPY . .
