@@ -1,6 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "wouter";
 import {
   ChevronRight,
@@ -11,6 +11,7 @@ import {
   Plus,
   Trash2,
   Edit,
+  Camera,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,6 +30,8 @@ export default function Account() {
   const { language } = useAppStore();
   const t = getTranslations(language);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const { data: addresses = [], isLoading: addressesLoading } = useQuery<Address[]>({
     queryKey: ["/api/addresses"],
@@ -39,6 +42,70 @@ export default function Account() {
     queryKey: ["/api/orders"],
     enabled: isAuthenticated,
   });
+
+  // Image upload mutation
+  const uploadImageMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append('image', file);
+
+      const response = await fetch('/api/upload-profile-image', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload image');
+      }
+
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      toast({
+        title: "Success",
+        description: "Profile image updated successfully",
+      });
+      setUploadingImage(false);
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to upload image. Please try again.",
+        variant: "destructive",
+      });
+      setUploadingImage(false);
+    },
+  });
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: "Invalid file",
+          description: "Please select an image file",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "File too large",
+          description: "Please select an image smaller than 5MB",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setUploadingImage(true);
+      uploadImageMutation.mutate(file);
+    }
+  };
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -164,17 +231,42 @@ export default function Account() {
             <Card>
               <CardContent className="pt-6">
                 <div className="flex flex-col items-center text-center">
-                  {user.profileImageUrl ? (
-                    <img
-                      src={user.profileImageUrl}
-                      alt="Profile"
-                      className="h-24 w-24 rounded-full object-cover"
+                  <div className="relative group">
+                    <input
+                      type="file"
+                      id="profile-image-upload"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
                     />
-                  ) : (
-                    <div className="flex h-24 w-24 items-center justify-center rounded-full bg-muted">
-                      <User className="h-12 w-12 text-muted-foreground" />
-                    </div>
-                  )}
+                    <label
+                      htmlFor="profile-image-upload"
+                      className="cursor-pointer relative block"
+                    >
+                      {user.profileImageUrl ? (
+                        <img
+                          src={user.profileImageUrl}
+                          alt="Profile"
+                          className="h-24 w-24 rounded-full object-cover ring-2 ring-offset-2 ring-purple-500/20 group-hover:ring-purple-500/50 transition-all"
+                        />
+                      ) : (
+                        <div className="flex h-24 w-24 items-center justify-center rounded-full bg-muted ring-2 ring-offset-2 ring-purple-500/20 group-hover:ring-purple-500/50 transition-all">
+                          <User className="h-12 w-12 text-muted-foreground" />
+                        </div>
+                      )}
+                      {/* Camera overlay */}
+                      <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity">
+                        {uploadingImage ? (
+                          <div className="h-6 w-6 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                        ) : (
+                          <Camera className="h-6 w-6 text-white" />
+                        )}
+                      </div>
+                    </label>
+                  </div>
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    Click to {user.profileImageUrl ? 'change' : 'upload'} photo
+                  </p>
                   <h2 className="mt-4 font-serif text-xl font-medium">
                     {user.firstName} {user.lastName}
                   </h2>

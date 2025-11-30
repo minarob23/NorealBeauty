@@ -29,6 +29,72 @@ export async function registerRoutes(
     }
   });
 
+  // Upload profile image
+  app.post('/api/upload-profile-image', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+
+      // For simplicity, we'll use a base64 data URL approach
+      // In production, you'd want to use a proper file upload service like S3
+      const chunks: Buffer[] = [];
+
+      req.on('data', (chunk: Buffer) => {
+        chunks.push(chunk);
+      });
+
+      req.on('end', async () => {
+        try {
+          const buffer = Buffer.concat(chunks);
+
+          // Extract the image from multipart form data
+          const boundary = req.headers['content-type']?.split('boundary=')[1];
+          if (!boundary) {
+            return res.status(400).json({ message: "Invalid request" });
+          }
+
+          const parts = buffer.toString('binary').split(`--${boundary}`);
+          let imageData = '';
+          let contentType = '';
+
+          for (const part of parts) {
+            if (part.includes('Content-Type: image/')) {
+              const lines = part.split('\r\n');
+              const contentTypeLine = lines.find(line => line.startsWith('Content-Type:'));
+              contentType = contentTypeLine?.split(': ')[1] || 'image/jpeg';
+
+              // Find the binary data (after the headers)
+              const dataStartIndex = part.indexOf('\r\n\r\n') + 4;
+              const dataEndIndex = part.lastIndexOf('\r\n');
+              imageData = part.substring(dataStartIndex, dataEndIndex);
+              break;
+            }
+          }
+
+          if (!imageData) {
+            return res.status(400).json({ message: "No image data found" });
+          }
+
+          // Convert to base64 data URL
+          const base64Data = Buffer.from(imageData, 'binary').toString('base64');
+          const dataUrl = `data:${contentType};base64,${base64Data}`;
+
+          // Update user profile image
+          await storage.updateUser(userId, {
+            profileImageUrl: dataUrl,
+          });
+
+          res.json({ success: true, imageUrl: dataUrl });
+        } catch (error) {
+          console.error("Error processing image:", error);
+          res.status(500).json({ message: "Failed to process image" });
+        }
+      });
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      res.status(500).json({ message: "Failed to upload image" });
+    }
+  });
+
   // Admin: Get all users
   app.get("/api/admin/users", isAdmin, async (req, res) => {
     try {
