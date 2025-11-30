@@ -2,6 +2,7 @@ FROM node:20-slim
 
 WORKDIR /app
 
+# Cache buster: 2025-12-01-image-upload-feature
 # Copy package files
 COPY package*.json ./
 
