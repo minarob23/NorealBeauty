@@ -394,6 +394,8 @@ export async function setupAuth(app: Express) {
     try {
       const { email, password, firstName, lastName } = req.body;
 
+      console.log("[Auth] Registration request for:", email);
+
       // Validate input
       if (!email || !password || !firstName) {
         return res.status(400).json({ message: "Missing required fields" });
@@ -424,7 +426,7 @@ export async function setupAuth(app: Express) {
 
       // Create user in Neon DB
       const userId = randomUUID();
-      await storage.upsertUser({
+      const createdUser = await storage.upsertUser({
         id: userId,
         email,
         password: hashedPassword,
@@ -436,13 +438,15 @@ export async function setupAuth(app: Express) {
         verificationToken: null,
       });
 
+      console.log("[Auth] User registered successfully:", userId);
+
       // Return success
       res.json({
         success: true,
         message: "Account created successfully! You can now log in.",
       });
     } catch (error) {
-      console.error("Registration error:", error);
+      console.error("[Auth] Registration error:", error);
       res.status(500).json({ message: "Registration failed" });
     }
   });

@@ -519,28 +519,60 @@ export class MemStorage implements IStorage {
 
   // User operations
   async getUser(id: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user;
+    try {
+      console.log("[Storage] Fetching user by id:", id);
+      const [user] = await db.select().from(users).where(eq(users.id, id));
+      console.log("[Storage] User found:", user?.id || "not found");
+      return user;
+    } catch (error) {
+      console.error("[Storage] Failed to get user:", error);
+      throw error;
+    }
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.email, email));
-    return user;
+    try {
+      console.log("[Storage] Fetching user by email:", email);
+      const [user] = await db.select().from(users).where(eq(users.email, email));
+      console.log("[Storage] User found by email:", user?.id || "not found");
+      return user;
+    } catch (error) {
+      console.error("[Storage] Failed to get user by email:", error);
+      throw error;
+    }
   }
 
   async upsertUser(userData: UpsertUser): Promise<User> {
-    const [user] = await db
-      .insert(users)
-      .values(userData)
-      .onConflictDoUpdate({
-        target: users.id,
-        set: {
-          ...userData,
-          updatedAt: new Date(),
-        },
-      })
-      .returning();
-    return user;
+    try {
+      console.log("[Storage] Upserting user with data:", {
+        id: userData.id,
+        email: userData.email,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+      });
+
+      const [user] = await db
+        .insert(users)
+        .values(userData)
+        .onConflictDoUpdate({
+          target: users.id,
+          set: {
+            ...userData,
+            updatedAt: new Date(),
+          },
+        })
+        .returning();
+
+      console.log("[Storage] Upsert successful, returned user:", {
+        id: user?.id,
+        email: user?.email,
+      });
+
+      return user;
+    } catch (error) {
+      console.error("[Storage] Failed to upsert user:", error);
+      throw error;
+    }
   }
 
   async getAllUsers(): Promise<User[]> {
@@ -548,12 +580,19 @@ export class MemStorage implements IStorage {
   }
 
   async updateUser(id: string, updates: Partial<UpsertUser>): Promise<User | undefined> {
-    const [user] = await db
-      .update(users)
-      .set({ ...updates, updatedAt: new Date() })
-      .where(eq(users.id, id))
-      .returning();
-    return user;
+    try {
+      console.log("[Storage] Updating user:", id, "with", Object.keys(updates));
+      const [user] = await db
+        .update(users)
+        .set({ ...updates, updatedAt: new Date() })
+        .where(eq(users.id, id))
+        .returning();
+      console.log("[Storage] User updated successfully");
+      return user;
+    } catch (error) {
+      console.error("[Storage] Failed to update user:", error);
+      throw error;
+    }
   }
 
   async deleteUser(id: string): Promise<boolean> {
@@ -562,13 +601,21 @@ export class MemStorage implements IStorage {
   }
 
   async updateLoginStats(userId: string): Promise<void> {
-    await db
-      .update(users)
-      .set({
-        lastLoginAt: new Date(),
-        loginCount: sql`${users.loginCount} + 1`,
-      })
-      .where(eq(users.id, userId));
+    try {
+      console.log("[Storage] Updating login stats for user:", userId);
+      await db
+        .update(users)
+        .set({
+          lastLoginAt: new Date(),
+          loginCount: sql`${users.loginCount} + 1`,
+        })
+        .where(eq(users.id, userId));
+      console.log("[Storage] Login stats updated successfully");
+    } catch (error) {
+      console.error("[Storage] Failed to update login stats:", error);
+      throw error;
+    }
+  }
   }
 
   async getUserStats(): Promise<{
