@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "wouter";
 import { Crown, Mail, Lock, ChevronRight } from "lucide-react";
@@ -16,6 +16,22 @@ export default function OwnerLogin() {
     email: "",
     password: "",
   });
+
+  // Automatically log out when accessing owner login page
+  useEffect(() => {
+    const performLogout = async () => {
+      try {
+        await fetch("/api/logout", {
+          method: "POST",
+          credentials: "include",
+        });
+      } catch (error) {
+        // Silently handle logout errors
+        console.log("Logout on owner page load:", error);
+      }
+    };
+    performLogout();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
