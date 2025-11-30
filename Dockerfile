@@ -7,7 +7,7 @@ COPY package*.json ./
 
 # Install dependencies with cache mount to a safe location
 # Use npm's cache directory instead of node_modules/.cache
-RUN --mount=type=cache,id=npm-cache,target=/root/.npm \
+RUN --mount=type=cache,target=/root/.npm \
     npm ci --omit=dev
 
 # Copy application code
