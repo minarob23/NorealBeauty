@@ -207,9 +207,7 @@ export type InsertReview = z.infer<typeof insertReviewSchema>;
 export const cartItemSchema = z.object({
   id: z.string(),
   productId: z.string(),
-  quantity: z.number().min(1),
-  isSubscription: z.boolean().optional(),
-  subscriptionFrequency: z.enum(subscriptionFrequencies).optional()
+  quantity: z.number().min(1)
 });
 
 export const insertCartItemSchema = cartItemSchema.omit({ id: true });
