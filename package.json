@@ -14,7 +14,8 @@
     "db:push": "drizzle-kit push --force",
     "db:migrate-products": "tsx server/migrations/add-products-table.ts",
     "create-admin": "tsx server/createAdmin.ts",
-    "create-owner": "tsx server/createOwner.ts"
+    "create-owner": "tsx server/createOwner.ts",
+    "seed-blogs": "tsx script/seed-blog-posts.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

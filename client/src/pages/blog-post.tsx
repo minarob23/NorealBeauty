@@ -78,7 +78,13 @@ export default function BlogPost() {
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="text-center py-12">Loading blog post...</div>
+        <div className="flex flex-col items-center justify-center py-20">
+          <div className="relative">
+            <div className="h-20 w-20 rounded-full border-4 border-purple-200 dark:border-purple-800"></div>
+            <div className="absolute top-0 h-20 w-20 animate-spin rounded-full border-4 border-transparent border-t-purple-600 dark:border-t-purple-400"></div>
+          </div>
+          <p className="mt-6 text-lg font-medium text-purple-600 dark:text-purple-400 animate-pulse">Loading blog post...</p>
+        </div>
       </div>
     );
   }

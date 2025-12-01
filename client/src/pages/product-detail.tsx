@@ -150,13 +150,13 @@ export default function ProductDetail() {
           </Button>
         </Link>
 
-        <div className="grid gap-12 lg:grid-cols-[1fr,400px]">
-          <div className="space-y-4">
+        <div className="grid gap-12 lg:grid-cols-2">
+          <div className="space-y-4 max-w-2xl mx-auto lg:mx-0">
             <motion.div
               key={selectedImage}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="relative aspect-square overflow-hidden rounded-md bg-muted"
+              className="relative aspect-square overflow-hidden rounded-2xl bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-900 dark:to-gray-800 shadow-xl border-2 border-gray-200 dark:border-gray-700"
             >
               <img
                 src={mainImage}
@@ -164,29 +164,31 @@ export default function ProductDetail() {
                 className="h-full w-full object-cover"
                 data-testid="img-product-main"
               />
-              {product.isBestSeller && (
-                <Badge className="absolute left-4 top-4 bg-gold text-white">
-                  {t.product.bestSeller}
-                </Badge>
-              )}
-              {product.isNew && (
-                <Badge variant="secondary" className="absolute left-4 top-12">
-                  {t.product.new}
-                </Badge>
-              )}
+              <div className="absolute left-4 top-4 flex flex-col gap-2">
+                {product.isBestSeller && (
+                  <Badge className="bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-lg px-3 py-1">
+                    ⭐ {t.product.bestSeller}
+                  </Badge>
+                )}
+                {product.isNew && (
+                  <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg px-3 py-1">
+                    ✨ {t.product.new}
+                  </Badge>
+                )}
+              </div>
             </motion.div>
 
-            <div className="flex gap-2 overflow-x-auto pb-2">
+            <div className="flex gap-3 overflow-x-auto pb-2">
               {[0, 1, 2, 3].map((index) => (
                 <motion.button
                   key={index}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setSelectedImage(index)}
-                  className={`relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-md ${
+                  className={`relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl border-2 transition-all ${
                     selectedImage === index
-                      ? "ring-2 ring-primary ring-offset-2"
-                      : ""
+                      ? "ring-4 ring-purple-500 ring-offset-2 border-purple-500 shadow-lg"
+                      : "border-gray-200 dark:border-gray-700 hover:border-purple-300"
                   }`}
                 >
                   <img
@@ -200,110 +202,109 @@ export default function ProductDetail() {
           </div>
 
           <div className="space-y-6">
-            <div>
-              <p className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
+            <div className="space-y-4">
+              <Badge variant="outline" className="bg-purple-50 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 border-purple-300 dark:border-purple-700 px-3 py-1">
                 {t.categories[product.category as keyof typeof t.categories]}
-              </p>
+              </Badge>
               <h1
-                className="mt-2 font-serif text-3xl font-light md:text-4xl"
+                className="font-serif text-4xl font-semibold md:text-5xl bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent leading-tight"
                 data-testid="text-product-name"
               >
                 {product.name}
               </h1>
-              <div className="mt-4 flex items-center gap-4">
+              <div className="flex items-center gap-3 p-4 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
                 <div className="flex items-center gap-1">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <Star
                       key={star}
-                      className={`h-5 w-5 ${
+                      className={`h-6 w-6 ${
                         star <= Math.round(product.rating)
-                          ? "fill-gold text-gold"
-                          : "fill-muted text-muted"
+                          ? "fill-amber-500 text-amber-500"
+                          : "fill-gray-300 text-gray-300 dark:fill-gray-600 dark:text-gray-600"
                       }`}
                     />
                   ))}
                 </div>
-                <span className="text-muted-foreground">
-                  {product.rating.toFixed(1)} ({product.reviewCount}{" "}
-                  {t.product.reviews.toLowerCase()})
+                <span className="font-semibold text-amber-900 dark:text-amber-100">
+                  {product.rating.toFixed(1)}
+                </span>
+                <span className="text-amber-700 dark:text-amber-300">
+                  ({product.reviewCount} {t.product.reviews.toLowerCase()})
                 </span>
               </div>
             </div>
 
-            <div className="flex items-baseline gap-3">
-              <span
-                className="text-3xl font-medium"
-                data-testid="text-product-price"
-              >
-                ${product.price.toFixed(2)}
-              </span>
-              <span className="text-sm text-muted-foreground">
-                or ${(product.price * 0.85).toFixed(2)} with subscription
-              </span>
-            </div>
-
-            <p className="text-muted-foreground">{product.shortDescription}</p>
-
-            <Card className="bg-muted/30">
-              <CardContent className="flex items-center gap-3 p-4">
-                <Repeat className="h-5 w-5 text-primary" />
-                <div>
-                  <p className="font-medium">{t.product.subscribe}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {t.product.subscribeDiscount}
-                  </p>
+            <Card className="border-2 border-purple-200 dark:border-purple-800 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30">
+              <CardContent className="p-6">
+                <div className="flex items-baseline gap-3 mb-2">
+                  <span
+                    className="text-4xl font-bold text-purple-600 dark:text-purple-400"
+                    data-testid="text-product-price"
+                  >
+                    ${product.price.toFixed(2)}
+                  </span>
                 </div>
+                <p className="text-sm text-purple-700 dark:text-purple-300 font-medium">
+                  💰 Save 15%: ${(product.price * 0.85).toFixed(2)} with subscription
+                </p>
               </CardContent>
             </Card>
 
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  disabled={quantity <= 1}
-                  data-testid="button-decrease-quantity"
-                >
-                  <Minus className="h-4 w-4" />
-                </Button>
-                <span
-                  className="w-12 text-center text-lg font-medium"
-                  data-testid="text-quantity"
-                >
-                  {quantity}
-                </span>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setQuantity(quantity + 1)}
-                  data-testid="button-increase-quantity"
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
+            <p className="text-base leading-relaxed text-foreground/80">{product.shortDescription}</p>
+
+            <div className="space-y-3">
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                <span className="text-sm font-semibold text-muted-foreground">Quantity:</span>
+                <div className="flex items-center gap-3">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    disabled={quantity <= 1}
+                    className="h-10 w-10 rounded-lg"
+                    data-testid="button-decrease-quantity"
+                  >
+                    <Minus className="h-4 w-4" />
+                  </Button>
+                  <span
+                    className="w-16 text-center text-xl font-bold"
+                    data-testid="text-quantity"
+                  >
+                    {quantity}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setQuantity(quantity + 1)}
+                    className="h-10 w-10 rounded-lg"
+                    data-testid="button-increase-quantity"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
 
               <Button
-                className="flex-1"
+                className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg"
                 onClick={handleAddToCart}
                 disabled={!product.inStock}
                 data-testid="button-add-to-cart"
               >
-                <ShoppingBag className="mr-2 h-4 w-4" />
+                <ShoppingBag className="mr-2 h-5 w-5" />
                 {product.inStock ? t.product.addToCart : t.product.outOfStock}
               </Button>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               <Button
                 variant="outline"
                 size="icon"
                 onClick={handleWishlistToggle}
-                className={inWishlist ? "text-red-500" : ""}
+                className={`h-12 w-12 rounded-xl border-2 ${inWishlist ? "text-red-500 border-red-500 bg-red-50 dark:bg-red-950/20" : "border-gray-300 dark:border-gray-700"}`}
                 data-testid="button-wishlist-toggle"
               >
                 <Heart
-                  className="h-4 w-4"
+                  className="h-5 w-5"
                   fill={inWishlist ? "currentColor" : "none"}
                 />
               </Button>
@@ -313,70 +314,91 @@ export default function ProductDetail() {
               />
             </div>
 
-            <div className="space-y-2 text-sm text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-green-500" />
-                Free shipping on orders over $50
+            <div className="grid gap-3">
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
+                <div className="h-8 w-8 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
+                  <Check className="h-5 w-5 text-white" />
+                </div>
+                <span className="text-sm font-medium text-green-900 dark:text-green-100">Free shipping on orders over $50</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-green-500" />
-                30-day money-back guarantee
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800">
+                <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+                  <Check className="h-5 w-5 text-white" />
+                </div>
+                <span className="text-sm font-medium text-blue-900 dark:text-blue-100">30-day money-back guarantee</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-green-500" />
-                Cruelty-free & vegan
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800">
+                <div className="h-8 w-8 rounded-full bg-purple-500 flex items-center justify-center flex-shrink-0">
+                  <Check className="h-5 w-5 text-white" />
+                </div>
+                <span className="text-sm font-medium text-purple-900 dark:text-purple-100">Cruelty-free & vegan</span>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="mt-16">
+        <div className="mt-20">
           <Tabs defaultValue="description" className="w-full">
-            <TabsList className="w-full justify-start border-b bg-transparent">
+            <TabsList className="w-full justify-start border-b-2 bg-transparent h-auto p-0 gap-8">
               <TabsTrigger
                 value="description"
-                className="data-[state=active]:border-b-2 data-[state=active]:border-primary"
+                className="text-lg font-semibold pb-4 px-2 rounded-none border-b-4 border-transparent data-[state=active]:border-purple-600 data-[state=active]:text-purple-600 data-[state=active]:bg-transparent hover:text-purple-500 transition-all"
               >
-                {t.product.description}
+                📝 {t.product.description}
               </TabsTrigger>
               <TabsTrigger
                 value="ingredients"
-                className="data-[state=active]:border-b-2 data-[state=active]:border-primary"
+                className="text-lg font-semibold pb-4 px-2 rounded-none border-b-4 border-transparent data-[state=active]:border-purple-600 data-[state=active]:text-purple-600 data-[state=active]:bg-transparent hover:text-purple-500 transition-all"
               >
-                {t.product.ingredients}
+                🧪 {t.product.ingredients}
               </TabsTrigger>
               <TabsTrigger
                 value="reviews"
-                className="data-[state=active]:border-b-2 data-[state=active]:border-primary"
+                className="text-lg font-semibold pb-4 px-2 rounded-none border-b-4 border-transparent data-[state=active]:border-purple-600 data-[state=active]:text-purple-600 data-[state=active]:bg-transparent hover:text-purple-500 transition-all"
               >
-                {t.product.reviews} ({reviews.length})
+                ⭐ {t.product.reviews} ({reviews.length})
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="description" className="mt-6">
-              <div className="prose prose-sm max-w-none dark:prose-invert">
-                <p>{product.description}</p>
-                <h4>{t.product.howToUse}</h4>
-                <ol>
-                  <li>Cleanse your face thoroughly and pat dry.</li>
-                  <li>Apply a small amount to your fingertips.</li>
-                  <li>Gently massage onto face and neck in upward motions.</li>
-                  <li>Use morning and evening for best results.</li>
-                </ol>
-              </div>
+            <TabsContent value="description" className="mt-8">
+              <Card className="border-2 border-purple-100 dark:border-purple-900/30">
+                <CardContent className="p-10">
+                  <div className="prose prose-xl max-w-none dark:prose-invert">
+                    <p className="text-xl leading-relaxed text-foreground/90 mb-8">{product.description}</p>
+                    <h3 className="text-3xl font-bold mt-10 mb-6 text-purple-600 dark:text-purple-400">{t.product.howToUse}</h3>
+                    <ol className="space-y-4">
+                      <li className="text-lg leading-relaxed pl-2">Cleanse your face thoroughly and pat dry.</li>
+                      <li className="text-lg leading-relaxed pl-2">Apply a small amount to your fingertips.</li>
+                      <li className="text-lg leading-relaxed pl-2">Gently massage onto face and neck in upward motions.</li>
+                      <li className="text-lg leading-relaxed pl-2">Use morning and evening for best results.</li>
+                    </ol>
+                  </div>
+                </CardContent>
+              </Card>
             </TabsContent>
 
-            <TabsContent value="ingredients" className="mt-6">
-              <div className="flex flex-wrap gap-2">
-                {product.ingredients.map((ingredient) => (
-                  <Badge key={ingredient} variant="secondary">
-                    {ingredient}
-                  </Badge>
-                ))}
-              </div>
+            <TabsContent value="ingredients" className="mt-8">
+              <Card className="border-2 border-purple-100 dark:border-purple-900/30">
+                <CardContent className="p-10">
+                  <h3 className="text-3xl font-bold mb-8 text-purple-600 dark:text-purple-400">Active Ingredients</h3>
+                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {product.ingredients.map((ingredient, index) => (
+                      <div
+                        key={ingredient}
+                        className="flex items-center gap-4 p-5 rounded-xl bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 border-2 border-purple-200 dark:border-purple-800 hover:shadow-lg transition-shadow"
+                      >
+                        <div className="h-14 w-14 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-xl flex-shrink-0">
+                          {index + 1}
+                        </div>
+                        <span className="font-bold text-lg text-foreground">{ingredient}</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
             </TabsContent>
 
-            <TabsContent value="reviews" className="mt-6">
+            <TabsContent value="reviews" className="mt-8">
               <ReviewsSection
                 productId={product.id}
                 reviews={reviews}
