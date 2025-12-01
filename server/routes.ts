@@ -563,7 +563,7 @@ export async function registerRoutes(
       // Update tracking info if provided
       if (trackingNumber || shippedAt || deliveredAt) {
         await db.update(orders).set({
-          trackingNumber: trackingNumber || undefined,
+          trackingNumber: trackingNumber ?? undefined,
           shippedAt: shippedAt ? new Date(shippedAt) : undefined,
           deliveredAt: deliveredAt ? new Date(deliveredAt) : undefined,
           updatedAt: new Date(),
