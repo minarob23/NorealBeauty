@@ -16,6 +16,7 @@ import {
   BarChart3,
   Star,
   X,
+  Upload,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -85,7 +86,7 @@ export default function Admin() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editProduct, setEditProduct] = useState<Product | null>(null);
   const [deleteProductId, setDeleteProductId] = useState<string | null>(null);
-  const [imageInput, setImageInput] = useState("");
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [ingredientInput, setIngredientInput] = useState("");
 
   const [formData, setFormData] = useState({
@@ -209,7 +210,6 @@ export default function Admin() {
       isBestSeller: false,
       isNew: false,
     });
-    setImageInput("");
     setIngredientInput("");
   };
 
@@ -220,6 +220,52 @@ export default function Admin() {
         images: [...prev.images, imageInput.trim()]
       }));
       setImageInput("");
+    }
+  };
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: "Invalid file",
+          description: "Please select an image file",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "File too large",
+          description: "Please select an image smaller than 5MB",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setUploadingImage(true);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData(prev => ({
+          ...prev,
+          images: [...prev.images, reader.result as string]
+        }));
+        setUploadingImage(false);
+        toast({
+          title: "Success",
+          description: "Image uploaded successfully",
+        });
+      };
+      reader.onerror = () => {
+        setUploadingImage(false);
+        toast({
+          title: "Error",
+          description: "Failed to upload image",
+          variant: "destructive",
+        });
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -737,6 +783,53 @@ export default function Admin() {
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
+                <Label>Product Images</Label>
+                <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    disabled={uploadingImage}
+                    className="hidden"
+                    id="image-upload"
+                  />
+                  <Label htmlFor="image-upload" className="cursor-pointer flex flex-col items-center gap-2">
+                    {uploadingImage ? (
+                      <>
+                        <p className="text-sm font-medium text-purple-600">Uploading image...</p>
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="h-8 w-8 text-gray-400" />
+                        <p className="text-sm font-medium text-foreground">Click to upload images</p>
+                        <p className="text-xs text-gray-500">PNG, JPG, GIF up to 5MB</p>
+                      </>
+                    )}
+                  </Label>
+                </div>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {formData.images.map((img, index) => (
+                    <div key={index} className="relative group">
+                      <img
+                        src={typeof img === 'string' && img.startsWith('data:') ? img : img}
+                        alt={`Product ${index + 1}`}
+                        className="h-20 w-20 object-cover rounded border border-gray-200 dark:border-gray-700"
+                      />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="absolute -top-2 -right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => handleRemoveImage(index)}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid gap-2">
                 <Label htmlFor="name">Product Name *</Label>
                 <Input
                   id="name"
@@ -812,37 +905,6 @@ export default function Admin() {
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-
-              <div className="grid gap-2">
-                <Label>Images</Label>
-                <div className="flex gap-2">
-                  <Input
-                    value={imageInput}
-                    onChange={(e) => setImageInput(e.target.value)}
-                    placeholder="Enter image URL"
-                    onKeyPress={(e) => e.key === 'Enter' && handleAddImage()}
-                  />
-                  <Button type="button" onClick={handleAddImage} variant="outline">
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {formData.images.map((img, index) => (
-                    <Badge key={index} variant="secondary" className="pr-1">
-                      {img.substring(0, 30)}...
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="h-4 w-4 ml-1"
-                        onClick={() => handleRemoveImage(index)}
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </Badge>
-                  ))}
-                </div>
               </div>
 
               <div className="grid gap-2">
