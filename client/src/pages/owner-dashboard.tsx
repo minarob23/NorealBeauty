@@ -167,92 +167,123 @@ export default function OwnerDashboard() {
         </div>
 
         {/* Owner Privileges Info */}
-        <Card className="border-t-4 border-t-purple-500 shadow-xl bg-gradient-to-br from-purple-50 via-pink-50 to-purple-50 dark:from-purple-950/30 dark:via-pink-950/30 dark:to-purple-950/30">
-          <CardHeader className="border-b bg-gradient-to-r from-purple-100/50 to-pink-100/50 dark:from-purple-950/50 dark:to-pink-950/50">
-            <CardTitle className="text-2xl flex items-center gap-2">
-              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                <Crown className="h-5 w-5 text-white" />
+        <Card className="border-l-4 border-l-amber-500 shadow-xl bg-gradient-to-br from-amber-50/50 via-yellow-50/30 to-orange-50/50 dark:from-amber-950/20 dark:via-yellow-950/10 dark:to-orange-950/20">
+          <CardHeader className="border-b border-amber-200/50">
+            <div className="flex items-start gap-3">
+              <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg">
+                <Crown className="h-6 w-6 text-white" />
               </div>
-              Owner Privileges & Capabilities
-            </CardTitle>
-            <CardDescription className="mt-2">
-              Your exclusive owner-level permissions and system access rights
-            </CardDescription>
+              <div>
+                <CardTitle className="text-2xl text-amber-900 dark:text-amber-100">
+                  Owner Privileges & Capabilities
+                </CardTitle>
+                <CardDescription className="mt-1 text-amber-700 dark:text-amber-300">
+                  Your exclusive owner-level permissions and system access rights
+                </CardDescription>
+              </div>
+            </div>
           </CardHeader>
-          <CardContent className="pt-6">
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              <div className="flex items-start gap-3 p-4 rounded-lg bg-gradient-to-br from-purple-100/50 to-white dark:from-purple-950/20 dark:to-background border border-purple-200">
-                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center flex-shrink-0">
-                  <Shield className="h-5 w-5 text-white" />
+          <CardContent className="pt-8">
+            <div className="space-y-6">
+              {/* Privilege Items */}
+              <div className="flex items-start gap-4 pb-6 border-b border-dashed border-amber-200">
+                <div className="mt-1">
+                  <div className="h-3 w-3 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 shadow-sm"></div>
                 </div>
-                <div>
-                  <p className="font-semibold text-purple-900 dark:text-purple-100">Full System Access</p>
-                  <p className="text-sm text-muted-foreground mt-1">
+                <div className="flex-1">
+                  <h3 className="font-bold text-lg text-purple-900 dark:text-purple-100 mb-1">
+                    Full System Access
+                  </h3>
+                  <p className="text-muted-foreground leading-relaxed">
                     Complete control over all platform features and settings
                   </p>
                 </div>
               </div>
-              <div className="flex items-start gap-3 p-4 rounded-lg bg-gradient-to-br from-blue-100/50 to-white dark:from-blue-950/20 dark:to-background border border-blue-200">
-                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center flex-shrink-0">
-                  <Users className="h-5 w-5 text-white" />
+
+              <div className="flex items-start gap-4 pb-6 border-b border-dashed border-amber-200">
+                <div className="mt-1">
+                  <div className="h-3 w-3 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 shadow-sm"></div>
                 </div>
-                <div>
-                  <p className="font-semibold text-blue-900 dark:text-blue-100">Admin Management</p>
-                  <p className="text-sm text-muted-foreground mt-1">
+                <div className="flex-1">
+                  <h3 className="font-bold text-lg text-blue-900 dark:text-blue-100 mb-1">
+                    Admin Management
+                  </h3>
+                  <p className="text-muted-foreground leading-relaxed">
                     Create, edit, and remove admin accounts with role assignment
                   </p>
                 </div>
               </div>
-              <div className="flex items-start gap-3 p-4 rounded-lg bg-gradient-to-br from-green-100/50 to-white dark:from-green-950/20 dark:to-background border border-green-200">
-                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center flex-shrink-0">
-                  <Activity className="h-5 w-5 text-white" />
+
+              <div className="flex items-start gap-4 pb-6 border-b border-dashed border-amber-200">
+                <div className="mt-1">
+                  <div className="h-3 w-3 rounded-full bg-gradient-to-br from-green-500 to-green-600 shadow-sm"></div>
                 </div>
-                <div>
-                  <p className="font-semibold text-green-900 dark:text-green-100">Activity Monitoring</p>
-                  <p className="text-sm text-muted-foreground mt-1">
+                <div className="flex-1">
+                  <h3 className="font-bold text-lg text-green-900 dark:text-green-100 mb-1">
+                    Activity Monitoring
+                  </h3>
+                  <p className="text-muted-foreground leading-relaxed">
                     Track all admin and owner actions in real-time
                   </p>
                 </div>
               </div>
-              <div className="flex items-start gap-3 p-4 rounded-lg bg-gradient-to-br from-orange-100/50 to-white dark:from-orange-950/20 dark:to-background border border-orange-200">
-                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center flex-shrink-0">
-                  <Settings className="h-5 w-5 text-white" />
+
+              <div className="flex items-start gap-4 pb-6 border-b border-dashed border-amber-200">
+                <div className="mt-1">
+                  <div className="h-3 w-3 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 shadow-sm"></div>
                 </div>
-                <div>
-                  <p className="font-semibold text-orange-900 dark:text-orange-100">System Configuration</p>
-                  <p className="text-sm text-muted-foreground mt-1">
+                <div className="flex-1">
+                  <h3 className="font-bold text-lg text-orange-900 dark:text-orange-100 mb-1">
+                    System Configuration
+                  </h3>
+                  <p className="text-muted-foreground leading-relaxed">
                     Modify critical system settings and configurations
                   </p>
                 </div>
               </div>
-              <div className="flex items-start gap-3 p-4 rounded-lg bg-gradient-to-br from-pink-100/50 to-white dark:from-pink-950/20 dark:to-background border border-pink-200">
-                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-pink-500 to-pink-600 flex items-center justify-center flex-shrink-0">
-                  <BarChart3 className="h-5 w-5 text-white" />
+
+              <div className="flex items-start gap-4 pb-6 border-b border-dashed border-amber-200">
+                <div className="mt-1">
+                  <div className="h-3 w-3 rounded-full bg-gradient-to-br from-pink-500 to-pink-600 shadow-sm"></div>
                 </div>
-                <div>
-                  <p className="font-semibold text-pink-900 dark:text-pink-100">Advanced Analytics</p>
-                  <p className="text-sm text-muted-foreground mt-1">
+                <div className="flex-1">
+                  <h3 className="font-bold text-lg text-pink-900 dark:text-pink-100 mb-1">
+                    Advanced Analytics
+                  </h3>
+                  <p className="text-muted-foreground leading-relaxed">
                     Access comprehensive analytics and business insights
                   </p>
                 </div>
               </div>
-              <div className="flex items-start gap-3 p-4 rounded-lg bg-gradient-to-br from-cyan-100/50 to-white dark:from-cyan-950/20 dark:to-background border border-cyan-200">
-                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center flex-shrink-0">
-                  <Crown className="h-5 w-5 text-white" />
+
+              <div className="flex items-start gap-4">
+                <div className="mt-1">
+                  <div className="h-3 w-3 rounded-full bg-gradient-to-br from-cyan-500 to-cyan-600 shadow-sm"></div>
                 </div>
-                <div>
-                  <p className="font-semibold text-cyan-900 dark:text-cyan-100">Exclusive Owner Tools</p>
-                  <p className="text-sm text-muted-foreground mt-1">
+                <div className="flex-1">
+                  <h3 className="font-bold text-lg text-cyan-900 dark:text-cyan-100 mb-1">
+                    Exclusive Owner Tools
+                  </h3>
+                  <p className="text-muted-foreground leading-relaxed">
                     Special tools and features available only to platform owners
                   </p>
                 </div>
               </div>
             </div>
-            <div className="mt-6 p-4 rounded-lg bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-950/40 dark:to-pink-950/40 border-2 border-purple-300">
-              <p className="text-sm font-medium text-purple-900 dark:text-purple-100 flex items-center gap-2">
-                <Shield className="h-4 w-4" />
-                <strong>Security Notice:</strong> Owner privileges grant unrestricted access to all system functions. Use responsibly.
-              </p>
+
+            {/* Security Notice */}
+            <div className="mt-8 p-5 rounded-xl bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-900/40 dark:to-orange-900/40 border-l-4 border-amber-500 shadow-inner">
+              <div className="flex items-start gap-3">
+                <Shield className="h-5 w-5 text-amber-700 dark:text-amber-300 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-bold text-amber-900 dark:text-amber-100 mb-1">
+                    Security Notice
+                  </p>
+                  <p className="text-sm text-amber-800 dark:text-amber-200 leading-relaxed">
+                    Owner privileges grant unrestricted access to all system functions. Use responsibly.
+                  </p>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
