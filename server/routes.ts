@@ -700,6 +700,19 @@ export async function registerRoutes(
   });
 
   // Blog routes
+  // Public: Get published blog posts
+  app.get("/api/blogs", async (req, res) => {
+    try {
+      const posts = await storage.getAllBlogPosts();
+      // Filter to only published posts for public access
+      const publishedPosts = posts.filter(post => post.published);
+      res.json(publishedPosts);
+    } catch (error) {
+      console.error("Failed to fetch blog posts:", error);
+      res.status(500).json({ message: "Failed to fetch blog posts" });
+    }
+  });
+
   // Admin: Get all blog posts
   app.get("/api/admin/blogs", isAdmin, async (req, res) => {
     try {

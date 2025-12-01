@@ -49,12 +49,9 @@ export default function Blog() {
   const [selectedCategory, setSelectedCategory] = useState("All");
 
   // Fetch blog posts from API
-  const { data: allPosts = [], isLoading } = useQuery<BlogPost[]>({
-    queryKey: ["/api/admin/blogs"],
+  const { data: posts = [], isLoading } = useQuery<BlogPost[]>({
+    queryKey: ["/api/blogs"],
   });
-
-  // Filter only published posts
-  const posts = allPosts.filter(post => post.published);
 
   const cats = categories[language];
   const featuredPost = posts.find((p) => p.tags?.includes("featured") || posts[0]);
