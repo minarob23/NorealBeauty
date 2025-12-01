@@ -207,7 +207,84 @@ export default function AdminProductsAnalytics() {
         <h2 className="text-2xl font-bold mb-4">Order Analytics</h2>
       </div>
 
-      {/* Order Charts */}
+      {/* Order Status Cards */}
+      <div className="grid gap-6 md:grid-cols-4 mb-6">
+        {(() => {
+          const statusCounts = orders.reduce((acc: any, order) => {
+            acc[order.status] = (acc[order.status] || 0) + 1;
+            return acc;
+          }, {});
+
+          const pendingOrders = statusCounts.pending || 0;
+          const shippedOrders = statusCounts.shipped || 0;
+          const completedOrders = statusCounts.completed || 0;
+          const cancelledOrders = statusCounts.cancelled || 0;
+
+          return (
+            <>
+              <Card className="border-l-4 border-l-yellow-500">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    Pending Orders
+                  </CardTitle>
+                  <div className="h-10 w-10 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center">
+                    <ShoppingCart className="h-5 w-5 text-yellow-600" />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-yellow-600">{pendingOrders}</div>
+                  <p className="text-xs text-muted-foreground mt-1">Awaiting processing</p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-l-4 border-l-cyan-500">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    Shipped Orders
+                  </CardTitle>
+                  <div className="h-10 w-10 rounded-full bg-cyan-100 dark:bg-cyan-900/30 flex items-center justify-center">
+                    <Package className="h-5 w-5 text-cyan-600" />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-cyan-600">{shippedOrders}</div>
+                  <p className="text-xs text-muted-foreground mt-1">In transit</p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-l-4 border-l-green-500">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    Completed Orders
+                  </CardTitle>
+                  <div className="h-10 w-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                    <ShoppingCart className="h-5 w-5 text-green-600" />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-green-600">{completedOrders}</div>
+                  <p className="text-xs text-muted-foreground mt-1">Successfully delivered</p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-l-4 border-l-red-500">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    Cancelled Orders
+                  </CardTitle>
+                  <div className="h-10 w-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                    <ShoppingCart className="h-5 w-5 text-red-600" />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-red-600">{cancelledOrders}</div>
+                  <p className="text-xs text-muted-foreground mt-1">Cancelled</p>
+                </CardContent>
+              </Card>
+            </>
+          );
+        })()}
+      </div>
       <div className="grid gap-6 md:grid-cols-2 mb-6">
         {/* Order Status Distribution */}
         <Card className="border-t-4 border-t-indigo-500">
@@ -424,85 +501,6 @@ export default function AdminProductsAnalytics() {
             })()}
           </CardContent>
         </Card>
-      </div>
-
-      {/* Order Statistics Cards */}
-      <div className="grid gap-6 md:grid-cols-4 mb-6">
-        {(() => {
-          const statusCounts = orders.reduce((acc: any, order) => {
-            acc[order.status] = (acc[order.status] || 0) + 1;
-            return acc;
-          }, {});
-
-          const pendingOrders = statusCounts.pending || 0;
-          const shippedOrders = statusCounts.shipped || 0;
-          const completedOrders = statusCounts.completed || 0;
-          const cancelledOrders = statusCounts.cancelled || 0;
-
-          return (
-            <>
-              <Card className="border-l-4 border-l-yellow-500">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Pending Orders
-                  </CardTitle>
-                  <div className="h-10 w-10 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center">
-                    <ShoppingCart className="h-5 w-5 text-yellow-600" />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold text-yellow-600">{pendingOrders}</div>
-                  <p className="text-xs text-muted-foreground mt-1">Awaiting processing</p>
-                </CardContent>
-              </Card>
-
-              <Card className="border-l-4 border-l-cyan-500">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Shipped Orders
-                  </CardTitle>
-                  <div className="h-10 w-10 rounded-full bg-cyan-100 dark:bg-cyan-900/30 flex items-center justify-center">
-                    <Package className="h-5 w-5 text-cyan-600" />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold text-cyan-600">{shippedOrders}</div>
-                  <p className="text-xs text-muted-foreground mt-1">In transit</p>
-                </CardContent>
-              </Card>
-
-              <Card className="border-l-4 border-l-green-500">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Completed Orders
-                  </CardTitle>
-                  <div className="h-10 w-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                    <ShoppingCart className="h-5 w-5 text-green-600" />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold text-green-600">{completedOrders}</div>
-                  <p className="text-xs text-muted-foreground mt-1">Successfully delivered</p>
-                </CardContent>
-              </Card>
-
-              <Card className="border-l-4 border-l-red-500">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Cancelled Orders
-                  </CardTitle>
-                  <div className="h-10 w-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                    <ShoppingCart className="h-5 w-5 text-red-600" />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold text-red-600">{cancelledOrders}</div>
-                  <p className="text-xs text-muted-foreground mt-1">Cancelled</p>
-                </CardContent>
-              </Card>
-            </>
-          );
-        })()}
       </div>
 
       {/* Charts Section */}
