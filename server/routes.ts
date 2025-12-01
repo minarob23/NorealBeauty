@@ -563,15 +563,15 @@ export async function registerRoutes(
       // Update tracking info if provided
       if (trackingNumber !== undefined || shippedAt !== undefined || deliveredAt !== undefined) {
         const updateData: {
-          trackingNumber?: string;
-          shippedAt?: Date;
-          deliveredAt?: Date;
+          trackingNumber?: string | null;
+          shippedAt?: Date | null;
+          deliveredAt?: Date | null;
           updatedAt: Date;
         } = {
           updatedAt: new Date(),
         };
         
-        if (trackingNumber !== undefined && trackingNumber !== null) {
+        if (trackingNumber !== undefined) {
           updateData.trackingNumber = trackingNumber;
         }
         if (shippedAt !== undefined) {
