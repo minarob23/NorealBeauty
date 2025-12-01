@@ -4,8 +4,8 @@
     "builder": "DOCKERFILE"
   },
   "deploy": {
-    "startCommand": "npm start",
-    "healthcheckPath": "/",
+    "startCommand": "npm run db:push -- --skip-generate && npm run db:migrate-products && npm start",
+    "healthcheckPath": "/_health",
     "healthcheckTimeout": 100,
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10
