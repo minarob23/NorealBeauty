@@ -202,9 +202,9 @@ export default function AdminProductsAnalytics() {
         </Card>
       </div>
 
-      {/* Orders Analytics Section */}
+      {/* Orders Section */}
       <div className="mb-8">
-        <h2 className="text-2xl font-bold mb-4">Order Analytics</h2>
+        <h2 className="text-2xl font-bold mb-4"></h2>
       </div>
 
       {/* Order Status Cards */}
