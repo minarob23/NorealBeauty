@@ -26,27 +26,37 @@ export default function OwnerDashboard() {
         description: "Please sign in to access the owner dashboard.",
         variant: "destructive",
       });
+      // Redirect after a short delay to ensure toast is visible
       setTimeout(() => {
         window.location.href = "/owner";
-      }, 500);
+      }, 1500);
     }
   }, [isAuthenticated, isLoading, toast]);
 
   useEffect(() => {
-    if (!isLoading && isAuthenticated && !(user as any)?.isOwner) {
+    if (!isLoading && isAuthenticated && user && !(user as any)?.isOwner) {
       toast({
         title: "Access Denied",
         description: "You don't have permission to access the owner dashboard.",
         variant: "destructive",
       });
+      // Redirect after a short delay to ensure toast is visible
       setTimeout(() => {
-        window.location.href = "/";
-      }, 1000);
+        // Logout the non-owner user
+        window.location.href = "/api/logout";
+      }, 1500);
     }
   }, [user, isLoading, isAuthenticated, toast]);
 
-  if (isLoading || !isAuthenticated || !(user as any)?.isOwner) {
-    return null;
+  if (isLoading || !isAuthenticated || !user || !(user as any)?.isOwner) {
+    return (
+      <div className="container mx-auto px-4 py-8 flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-purple-600 border-r-transparent"></div>
+          <p className="mt-4 text-muted-foreground">Verifying access...</p>
+        </div>
+      </div>
+    );
   }
 
   return (

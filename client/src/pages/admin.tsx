@@ -88,6 +88,7 @@ export default function Admin() {
   const [deleteProductId, setDeleteProductId] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [ingredientInput, setIngredientInput] = useState("");
+  const [imageInput, setImageInput] = useState("");
   const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
   const [orderStatusDialogOpen, setOrderStatusDialogOpen] = useState(false);
   const [orderUpdateData, setOrderUpdateData] = useState({
@@ -540,17 +541,17 @@ export default function Admin() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
           >
-            <Card className="border-l-4 border-l-orange-500 hover:shadow-lg transition-shadow bg-gradient-to-br from-orange-50 to-background dark:from-orange-950/20 dark:to-background">
+            <Card className="border-l-4 border-l-rose-500 hover:shadow-lg transition-shadow bg-gradient-to-br from-rose-50 to-background dark:from-rose-950/20 dark:to-background">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   Best Sellers
                 </CardTitle>
-                <div className="h-10 w-10 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
-                  <Star className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                <div className="h-10 w-10 rounded-full bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center">
+                  <Star className="h-5 w-5 text-rose-600 dark:text-rose-400" />
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-orange-600 dark:text-orange-400">
+                <div className="text-3xl font-bold text-rose-600 dark:text-rose-400">
                   {bestSellerCount}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
@@ -581,17 +582,17 @@ export default function Admin() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5 }}
                 >
-                  <Card className="border-l-4 border-l-yellow-500 hover:shadow-lg transition-shadow bg-gradient-to-br from-yellow-50 to-background dark:from-yellow-950/20 dark:to-background">
+                  <Card className="border-l-4 border-l-amber-500 hover:shadow-lg transition-shadow bg-gradient-to-br from-amber-50 to-background dark:from-amber-950/20 dark:to-background">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                       <CardTitle className="text-sm font-medium text-muted-foreground">
                         Pending Orders
                       </CardTitle>
-                      <div className="h-10 w-10 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center">
-                        <ShoppingCart className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+                      <div className="h-10 w-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+                        <ShoppingCart className="h-5 w-5 text-amber-600 dark:text-amber-400" />
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-3xl font-bold text-yellow-600 dark:text-yellow-400">{pendingOrders}</div>
+                      <div className="text-3xl font-bold text-amber-600 dark:text-amber-400">{pendingOrders}</div>
                       <p className="text-xs text-muted-foreground mt-1">Awaiting processing</p>
                     </CardContent>
                   </Card>
@@ -623,17 +624,17 @@ export default function Admin() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.7 }}
                 >
-                  <Card className="border-l-4 border-l-green-500 hover:shadow-lg transition-shadow bg-gradient-to-br from-green-50 to-background dark:from-green-950/20 dark:to-background">
+                  <Card className="border-l-4 border-l-teal-500 hover:shadow-lg transition-shadow bg-gradient-to-br from-teal-50 to-background dark:from-teal-950/20 dark:to-background">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                       <CardTitle className="text-sm font-medium text-muted-foreground">
                         Completed Orders
                       </CardTitle>
-                      <div className="h-10 w-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                        <ShoppingCart className="h-5 w-5 text-green-600 dark:text-green-400" />
+                      <div className="h-10 w-10 rounded-full bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center">
+                        <ShoppingCart className="h-5 w-5 text-teal-600 dark:text-teal-400" />
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-3xl font-bold text-green-600 dark:text-green-400">{completedOrders}</div>
+                      <div className="text-3xl font-bold text-teal-600 dark:text-teal-400">{completedOrders}</div>
                       <p className="text-xs text-muted-foreground mt-1">Successfully delivered</p>
                     </CardContent>
                   </Card>

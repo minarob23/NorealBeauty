@@ -33,10 +33,21 @@ export default function OwnerLogin() {
         window.location.href = "/owner/dashboard";
       } else if (user) {
         // User is logged in but not as owner, log them out
-        fetch("/api/logout", {
-          method: "GET",
-          credentials: "include",
-        }).catch(err => console.log("Logout error:", err));
+        const logoutUser = async () => {
+          try {
+            await fetch("/api/logout", {
+              method: "GET",
+              credentials: "include",
+            });
+            // Force page reload to clear auth context after logout
+            window.location.href = "/owner";
+          } catch (err) {
+            console.error("Logout error:", err);
+            // Even if logout fails, redirect to clear the UI
+            window.location.href = "/owner";
+          }
+        };
+        logoutUser();
       }
     }
   }, [user, authLoading]);

@@ -139,6 +139,8 @@ export const orderItems = pgTable("order_items", {
   productName: varchar("product_name").notNull(),
   quantity: integer("quantity").notNull(),
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  isSubscription: boolean("is_subscription").default(false),
+  subscriptionFrequency: varchar("subscription_frequency"),
 });
 
 export type OrderItem = typeof orderItems.$inferSelect;
@@ -207,7 +209,9 @@ export type InsertReview = z.infer<typeof insertReviewSchema>;
 export const cartItemSchema = z.object({
   id: z.string(),
   productId: z.string(),
-  quantity: z.number().min(1)
+  quantity: z.number().min(1),
+  isSubscription: z.boolean().optional(),
+  subscriptionFrequency: z.enum(['monthly', 'quarterly', 'yearly']).optional()
 });
 
 export const insertCartItemSchema = cartItemSchema.omit({ id: true });
@@ -265,5 +269,37 @@ export const insertBlogPostSchema = blogPostSchema.omit({
   createdAt: true, 
   updatedAt: true,
   viewCount: true 
+});
+
+// Notifications table
+export const notifications = pgTable("notifications", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  type: varchar("type").notNull(), // 'order', 'account', 'product', 'system', 'admin'
+  title: varchar("title", { length: 255 }).notNull(),
+  message: text("message").notNull(),
+  link: varchar("link"), // Optional link to related page
+  read: boolean("read").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export type Notification = typeof notifications.$inferSelect;
+export type InsertNotification = typeof notifications.$inferInsert;
+
+export const notificationSchema = z.object({
+  id: z.string(),
+  userId: z.string(),
+  type: z.enum(['order', 'account', 'product', 'system', 'admin']),
+  title: z.string().min(1).max(255),
+  message: z.string().min(1),
+  link: z.string().optional(),
+  read: z.boolean(),
+  createdAt: z.string(),
+});
+
+export const insertNotificationSchema = notificationSchema.omit({ 
+  id: true, 
+  createdAt: true,
+  read: true 
 });
 

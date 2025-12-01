@@ -291,7 +291,13 @@ export default function AdminBlogManagement() {
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="text-center py-8">Loading blog posts...</div>
+            <div className="flex flex-col items-center justify-center py-12">
+              <div className="relative">
+                <div className="h-16 w-16 rounded-full border-4 border-gray-200 dark:border-gray-700"></div>
+                <div className="absolute top-0 left-0 h-16 w-16 rounded-full border-4 border-t-purple-600 border-r-pink-600 border-b-transparent border-l-transparent animate-spin"></div>
+              </div>
+              <p className="mt-4 text-base font-medium text-purple-600 dark:text-purple-400 animate-pulse">Loading blog posts...</p>
+            </div>
           ) : posts.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               No blog posts yet. Create your first post!

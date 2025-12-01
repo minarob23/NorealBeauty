@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useParams, Link } from "wouter";
@@ -10,6 +10,10 @@ import {
   ShoppingBag,
   Star,
   Check,
+  ZoomIn,
+  ChevronLeft,
+  ChevronRight,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -41,6 +45,10 @@ export default function ProductDetail() {
 
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [isZoomed, setIsZoomed] = useState(false);
+  const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 });
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const imageRef = useRef<HTMLDivElement>(null);
 
   const { data: product, isLoading: productLoading } = useQuery<Product>({
     queryKey: ["/api/products", id],
@@ -55,8 +63,8 @@ export default function ProductDetail() {
   });
 
   const reviewMutation = useMutation({
-    mutationFn: async (data: Omit<InsertReview, "productId">) =>
-      apiRequest("POST", `/api/products/${id}/reviews`, { ...data, productId: id }),
+    mutationFn: async (data: InsertReview) =>
+      apiRequest("POST", `/api/products/${id}/reviews`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/products", id, "reviews"] });
       queryClient.invalidateQueries({ queryKey: ["/api/products", id] });
@@ -134,7 +142,38 @@ export default function ProductDetail() {
   }
 
   const productIndex = allProducts.findIndex((p) => p.id === product.id);
-  const mainImage = product.images[selectedImage] || getProductImage(productIndex);
+  
+  // Use product images if available, otherwise fallback to stock images
+  const galleryImages = product.images && product.images.length > 0 
+    ? product.images.slice(0, 4)
+    : [0, 1, 2, 3].map(i => getProductImage(productIndex + i));
+  
+  // Ensure we have at least 4 images by repeating if necessary
+  while (galleryImages.length < 4) {
+    galleryImages.push(getProductImage(productIndex + galleryImages.length));
+  }
+  
+  const mainImage = galleryImages[selectedImage];
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!imageRef.current) return;
+    const rect = imageRef.current.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    setZoomPosition({ x, y });
+  };
+
+  const handleNextImage = () => {
+    setSelectedImage((prev) => (prev + 1) % 4);
+  };
+
+  const handlePrevImage = () => {
+    setSelectedImage((prev) => (prev - 1 + 4) % 4);
+  };
+
+  const handleThumbnailHover = (index: number) => {
+    setSelectedImage(index);
+  };
 
   return (
     <motion.div
@@ -142,6 +181,78 @@ export default function ProductDetail() {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
     >
+      {/* Fullscreen Image Modal */}
+      <AnimatePresence>
+        {isFullscreen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4"
+            onClick={() => setIsFullscreen(false)}
+          >
+            <button
+              onClick={() => setIsFullscreen(false)}
+              className="absolute top-4 right-4 bg-white/10 hover:bg-white/20 text-white p-3 rounded-full transition-colors"
+            >
+              <X className="h-6 w-6" />
+            </button>
+            
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handlePrevImage();
+              }}
+              className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white p-4 rounded-full transition-colors"
+            >
+              <ChevronLeft className="h-8 w-8" />
+            </button>
+            
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleNextImage();
+              }}
+              className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white p-4 rounded-full transition-colors"
+            >
+              <ChevronRight className="h-8 w-8" />
+            </button>
+
+            <motion.img
+              key={selectedImage}
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              src={mainImage}
+              alt={product.name}
+              className="max-h-[90vh] max-w-[90vw] object-contain"
+              onClick={(e) => e.stopPropagation()}
+            />
+
+            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2">
+              {[0, 1, 2, 3].map((index) => (
+                <button
+                  key={index}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedImage(index);
+                  }}
+                  className={`h-2 w-2 rounded-full transition-all ${
+                    selectedImage === index
+                      ? "bg-white w-8"
+                      : "bg-white/50 hover:bg-white/75"
+                  }`}
+                />
+              ))}
+            </div>
+
+            <div className="absolute bottom-8 right-8 bg-black/60 text-white px-4 py-2 rounded-full text-sm font-medium">
+              {selectedImage + 1} / 4
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="container mx-auto px-4 py-8">
         <Link href="/shop">
           <Button variant="ghost" className="mb-6">
@@ -153,17 +264,68 @@ export default function ProductDetail() {
         <div className="grid gap-12 lg:grid-cols-2">
           <div className="space-y-4 max-w-2xl mx-auto lg:mx-0">
             <motion.div
-              key={selectedImage}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="relative aspect-square overflow-hidden rounded-2xl bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-900 dark:to-gray-800 shadow-xl border-2 border-gray-200 dark:border-gray-700"
+              ref={imageRef}
+              className="relative aspect-square overflow-hidden rounded-2xl bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-900 dark:to-gray-800 shadow-xl border-2 border-gray-200 dark:border-gray-700 group cursor-zoom-in"
+              onMouseEnter={() => setIsZoomed(true)}
+              onMouseLeave={() => setIsZoomed(false)}
+              onMouseMove={handleMouseMove}
+              onClick={() => setIsFullscreen(true)}
             >
-              <img
-                src={mainImage}
-                alt={product.name}
-                className="h-full w-full object-cover"
-                data-testid="img-product-main"
-              />
+              <AnimatePresence mode="wait">
+                <motion.img
+                  key={selectedImage}
+                  src={mainImage}
+                  alt={product.name}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className={`absolute inset-0 h-full w-full object-cover transition-transform duration-200 ${
+                    isZoomed ? 'scale-150' : 'scale-100'
+                  }`}
+                  style={
+                    isZoomed
+                      ? {
+                          transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`,
+                        }
+                      : undefined
+                  }
+                  data-testid="img-product-main"
+                />
+              </AnimatePresence>
+              
+              {/* Zoom Icon */}
+              <div className="absolute right-4 top-4 bg-white/90 dark:bg-gray-900/90 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
+                <ZoomIn className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+              </div>
+
+              {/* Navigation Arrows */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handlePrevImage();
+                }}
+                className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 dark:bg-gray-900/80 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white dark:hover:bg-gray-800 shadow-lg"
+              >
+                <ChevronLeft className="h-6 w-6 text-gray-700 dark:text-gray-300" />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleNextImage();
+                }}
+                className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 dark:bg-gray-900/80 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white dark:hover:bg-gray-800 shadow-lg"
+              >
+                <ChevronRight className="h-6 w-6 text-gray-700 dark:text-gray-300" />
+              </button>
+
+              {/* Image Counter */}
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 text-white px-3 py-1 rounded-full text-sm font-medium">
+                {selectedImage + 1} / 4
+              </div>
+
               <div className="absolute left-4 top-4 flex flex-col gap-2">
                 {product.isBestSeller && (
                   <Badge className="bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-lg px-3 py-1">
@@ -185,6 +347,7 @@ export default function ProductDetail() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setSelectedImage(index)}
+                  onMouseEnter={() => handleThumbnailHover(index)}
                   className={`relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl border-2 transition-all ${
                     selectedImage === index
                       ? "ring-4 ring-purple-500 ring-offset-2 border-purple-500 shadow-lg"
@@ -192,7 +355,7 @@ export default function ProductDetail() {
                   }`}
                 >
                   <img
-                    src={getProductImage(productIndex + index)}
+                    src={galleryImages[index]}
                     alt={`${product.name} view ${index + 1}`}
                     className="h-full w-full object-cover"
                   />

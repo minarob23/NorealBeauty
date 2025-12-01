@@ -17,6 +17,8 @@ import {
   type InsertAdminActivityLog,
   type BlogPost,
   type InsertBlogPost,
+  type Notification,
+  type InsertNotification,
   users,
   addresses,
   orders,
@@ -24,6 +26,7 @@ import {
   adminActivityLogs,
   blogPosts,
   products,
+  notifications,
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { sql } from "drizzle-orm";
@@ -77,6 +80,13 @@ export interface IStorage {
   createBlogPost(post: Omit<InsertBlogPost, "id">): Promise<BlogPost>;
   updateBlogPost(id: string, updates: Partial<InsertBlogPost>): Promise<BlogPost | undefined>;
   deleteBlogPost(id: string): Promise<boolean>;
+  // Notification operations
+  getUserNotifications(userId: string): Promise<Notification[]>;
+  createNotification(notification: InsertNotification): Promise<Notification>;
+  markNotificationAsRead(id: string, userId: string): Promise<void>;
+  markAllNotificationsAsRead(userId: string): Promise<void>;
+  deleteNotification(id: string, userId: string): Promise<void>;
+  getUnreadNotificationCount(userId: string): Promise<number>;
 }
 
 const sampleProducts: Product[] = [
@@ -544,6 +554,12 @@ export class MemStorage implements IStorage {
 
   async upsertUser(userData: UpsertUser): Promise<User> {
     try {
+      console.log("[Storage] Upserting user with data:", {
+        id: userData.id,
+        email: userData.email,
+        profileImageUrl: userData.profileImageUrl || "not provided"
+      });
+      
       const [user] = await db
         .insert(users)
         .values(userData)
@@ -556,6 +572,7 @@ export class MemStorage implements IStorage {
         })
         .returning();
 
+      console.log("[Storage] User upserted, profileImageUrl in DB:", user.profileImageUrl || "not set");
       return user;
     } catch (error) {
       console.error("[Storage] Failed to upsert user:", error);
@@ -746,6 +763,50 @@ export class MemStorage implements IStorage {
   async deleteBlogPost(id: string): Promise<boolean> {
     await db.delete(blogPosts).where(eq(blogPosts.id, id));
     return true;
+  }
+
+  // Notification operations
+  async getUserNotifications(userId: string): Promise<Notification[]> {
+    const result = await db
+      .select()
+      .from(notifications)
+      .where(eq(notifications.userId, userId))
+      .orderBy(sql`${notifications.createdAt} DESC`)
+      .limit(50);
+    return result;
+  }
+
+  async createNotification(notification: InsertNotification): Promise<Notification> {
+    const [created] = await db.insert(notifications).values(notification).returning();
+    return created;
+  }
+
+  async markNotificationAsRead(id: string, userId: string): Promise<void> {
+    await db
+      .update(notifications)
+      .set({ read: true })
+      .where(sql`${notifications.id} = ${id} AND ${notifications.userId} = ${userId}`);
+  }
+
+  async markAllNotificationsAsRead(userId: string): Promise<void> {
+    await db
+      .update(notifications)
+      .set({ read: true })
+      .where(eq(notifications.userId, userId));
+  }
+
+  async deleteNotification(id: string, userId: string): Promise<void> {
+    await db
+      .delete(notifications)
+      .where(sql`${notifications.id} = ${id} AND ${notifications.userId} = ${userId}`);
+  }
+
+  async getUnreadNotificationCount(userId: string): Promise<number> {
+    const result = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(notifications)
+      .where(sql`${notifications.userId} = ${userId} AND ${notifications.read} = false`);
+    return result[0]?.count || 0;
   }
 }
 

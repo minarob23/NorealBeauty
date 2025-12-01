@@ -50,6 +50,15 @@ export function ProductGrid({
   );
   const [sortBy, setSortBy] = useState<SortOption>("featured");
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
+  const [showInStock, setShowInStock] = useState(false);
+  const [minRating, setMinRating] = useState(0);
+
+  // Calculate price range from products
+  const maxPrice = useMemo(() => {
+    if (products.length === 0) return 1000;
+    return Math.ceil(Math.max(...products.map(p => p.price)) / 10) * 10;
+  }, [products]);
 
   const filteredProducts = useMemo(() => {
     let result = [...products];
@@ -72,6 +81,21 @@ export function ProductGrid({
       result = result.filter(
         (p) => p.skinType === selectedSkinType || p.skinType === "all"
       );
+    }
+
+    // Price range filter
+    result = result.filter(
+      (p) => p.price >= priceRange[0] && p.price <= priceRange[1]
+    );
+
+    // Stock filter
+    if (showInStock) {
+      result = result.filter((p) => p.inStock);
+    }
+
+    // Rating filter
+    if (minRating > 0) {
+      result = result.filter((p) => p.rating >= minRating);
     }
 
     switch (sortBy) {
@@ -99,12 +123,18 @@ export function ProductGrid({
 
   const activeFiltersCount =
     (selectedCategory !== "all" ? 1 : 0) +
-    (selectedSkinType !== "all" ? 1 : 0);
+    (selectedSkinType !== "all" ? 1 : 0) +
+    (priceRange[0] > 0 || priceRange[1] < maxPrice ? 1 : 0) +
+    (showInStock ? 1 : 0) +
+    (minRating > 0 ? 1 : 0);
 
   const clearFilters = () => {
     setSelectedCategory("all");
     setSelectedSkinType("all");
     setSearchQuery("");
+    setPriceRange([0, maxPrice]);
+    setShowInStock(false);
+    setMinRating(0);
   };
 
   if (isLoading) {
@@ -178,6 +208,62 @@ export function ProductGrid({
                     </SelectContent>
                   </Select>
                 </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">
+                    Price Range: ${priceRange[0]} - ${priceRange[1]}
+                  </label>
+                  <div className="flex gap-2">
+                    <Input
+                      type="number"
+                      placeholder="Min"
+                      value={priceRange[0]}
+                      onChange={(e) => setPriceRange([Number(e.target.value), priceRange[1]])}
+                      min={0}
+                      max={priceRange[1]}
+                    />
+                    <Input
+                      type="number"
+                      placeholder="Max"
+                      value={priceRange[1]}
+                      onChange={(e) => setPriceRange([priceRange[0], Number(e.target.value)])}
+                      min={priceRange[0]}
+                      max={maxPrice}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Minimum Rating</label>
+                  <Select
+                    value={minRating.toString()}
+                    onValueChange={(v) => setMinRating(Number(v))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="0">All Ratings</SelectItem>
+                      <SelectItem value="4">4★ & Above</SelectItem>
+                      <SelectItem value="3">3★ & Above</SelectItem>
+                      <SelectItem value="2">2★ & Above</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="stock-mobile"
+                    checked={showInStock}
+                    onChange={(e) => setShowInStock(e.target.checked)}
+                    className="h-4 w-4 rounded border-gray-300"
+                  />
+                  <label htmlFor="stock-mobile" className="text-sm font-medium">
+                    In Stock Only
+                  </label>
+                </div>
+
                 <Button
                   variant="outline"
                   onClick={clearFilters}
@@ -209,6 +295,21 @@ export function ProductGrid({
             </SelectContent>
           </Select>
 
+          <Select
+            value={minRating.toString()}
+            onValueChange={(v) => setMinRating(Number(v))}
+          >
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Min Rating" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="0">All Ratings</SelectItem>
+              <SelectItem value="4">4★ & Above</SelectItem>
+              <SelectItem value="3">3★ & Above</SelectItem>
+              <SelectItem value="2">2★ & Above</SelectItem>
+            </SelectContent>
+          </Select>
+
           <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
             <SelectTrigger className="w-48" data-testid="select-sort">
               <SelectValue placeholder={t.filters.sortBy} />
@@ -224,32 +325,67 @@ export function ProductGrid({
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        {categories.map((cat) => (
-          <Button
-            key={cat}
-            variant={selectedCategory === cat ? "default" : "outline"}
-            size="sm"
-            onClick={() =>
-              setSelectedCategory(selectedCategory === cat ? "all" : cat)
-            }
-            className="text-xs font-medium uppercase tracking-wider"
-            data-testid={`button-category-${cat}`}
-          >
-            {t.categories[cat as keyof typeof t.categories]}
-          </Button>
-        ))}
+      <div className="space-y-3">
+        <div className="flex flex-wrap gap-2">
+          {categories.map((cat) => (
+            <Button
+              key={cat}
+              variant={selectedCategory === cat ? "default" : "outline"}
+              size="sm"
+              onClick={() =>
+                setSelectedCategory(selectedCategory === cat ? "all" : cat)
+              }
+              className="text-xs font-medium uppercase tracking-wider"
+              data-testid={`button-category-${cat}`}
+            >
+              {t.categories[cat as keyof typeof t.categories]}
+            </Button>
+          ))}
+          {activeFiltersCount > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearFilters}
+              className="text-xs text-muted-foreground"
+              data-testid="button-clear-all"
+            >
+              <X className="mr-1 h-3 w-3" />
+              Clear All
+            </Button>
+          )}
+        </div>
+
+        {/* Active Filters Display */}
         {activeFiltersCount > 0 && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={clearFilters}
-            className="text-xs text-muted-foreground"
-            data-testid="button-clear-all"
-          >
-            <X className="mr-1 h-3 w-3" />
-            Clear All
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            {priceRange[0] > 0 || priceRange[1] < maxPrice ? (
+              <Badge variant="secondary" className="gap-1">
+                ${priceRange[0]} - ${priceRange[1]}
+                <X
+                  className="h-3 w-3 cursor-pointer"
+                  onClick={() => setPriceRange([0, maxPrice])}
+                />
+              </Badge>
+            ) : null}
+            {showInStock && (
+              <Badge variant="secondary" className="gap-1">
+                In Stock
+                <X
+                  className="h-3 w-3 cursor-pointer"
+                  onClick={() => setShowInStock(false)}
+                />
+              </Badge>
+            )}
+            {minRating > 0 && (
+              <Badge variant="secondary" className="gap-1">
+                {minRating}★ & Above
+                <X
+                  className="h-3 w-3 cursor-pointer"
+                  onClick={() => setMinRating(0)}
+                />
+              </Badge>
+            )}
+          </div>
         )}
       </div>
 

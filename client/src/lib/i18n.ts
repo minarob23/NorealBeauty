@@ -43,6 +43,11 @@ export const translations = {
       ingredients: "Ingredients",
       howToUse: "How to Use"
     },
+    subscription: {
+      monthly: "Monthly",
+      quarterly: "Quarterly",
+      yearly: "Yearly"
+    },
     cart: {
       title: "Shopping Cart",
       empty: "Your cart is empty",
@@ -150,6 +155,11 @@ export const translations = {
       ingredients: "Ingrédients",
       howToUse: "Mode d'Emploi"
     },
+    subscription: {
+      monthly: "Mensuel",
+      quarterly: "Trimestriel",
+      yearly: "Annuel"
+    },
     cart: {
       title: "Panier",
       empty: "Votre panier est vide",
@@ -256,6 +266,11 @@ export const translations = {
       description: "Descripción",
       ingredients: "Ingredientes",
       howToUse: "Modo de Uso"
+    },
+    subscription: {
+      monthly: "Mensual",
+      quarterly: "Trimestral",
+      yearly: "Anual"
     },
     cart: {
       title: "Carrito de Compras",

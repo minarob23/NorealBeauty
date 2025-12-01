@@ -22,6 +22,8 @@ export async function registerRoutes(
     try {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
+      console.log("[Auth] Fetching user data for:", userId);
+      console.log("[Auth] User profileImageUrl:", user?.profileImageUrl || "not set");
       res.json(user);
     } catch (error) {
       console.error("Error fetching user:", error);
@@ -47,41 +49,82 @@ export async function registerRoutes(
           const buffer = Buffer.concat(chunks);
 
           // Extract the image from multipart form data
-          const boundary = req.headers['content-type']?.split('boundary=')[1];
+          const contentType = req.headers['content-type'];
+          if (!contentType || !contentType.includes('multipart/form-data')) {
+            return res.status(400).json({ message: "Invalid request" });
+          }
+
+          const boundary = contentType.split('boundary=')[1];
           if (!boundary) {
             return res.status(400).json({ message: "Invalid request" });
           }
 
-          const parts = buffer.toString('binary').split(`--${boundary}`);
-          let imageData = '';
-          let contentType = '';
+          // Split buffer by boundary (keeping as buffer for binary data)
+          const boundaryBuffer = Buffer.from(`--${boundary}`);
+          const parts = [];
+          let lastIndex = 0;
 
-          for (const part of parts) {
-            if (part.includes('Content-Type: image/')) {
-              const lines = part.split('\r\n');
-              const contentTypeLine = lines.find(line => line.startsWith('Content-Type:'));
-              contentType = contentTypeLine?.split(': ')[1] || 'image/jpeg';
-
-              // Find the binary data (after the headers)
-              const dataStartIndex = part.indexOf('\r\n\r\n') + 4;
-              const dataEndIndex = part.lastIndexOf('\r\n');
-              imageData = part.substring(dataStartIndex, dataEndIndex);
-              break;
+          // Find all boundary occurrences in the buffer
+          for (let i = 0; i <= buffer.length - boundaryBuffer.length; i++) {
+            if (buffer.subarray(i, i + boundaryBuffer.length).equals(boundaryBuffer)) {
+              if (lastIndex > 0) {
+                parts.push(buffer.subarray(lastIndex, i));
+              }
+              lastIndex = i + boundaryBuffer.length;
             }
           }
 
-          if (!imageData) {
+          let imageData: Buffer | null = null;
+          let imageMimeType = 'image/jpeg';
+
+          // Parse each part to find the image
+          for (const part of parts) {
+            const partStr = part.toString('utf-8', 0, Math.min(500, part.length)); // First 500 bytes to check headers
+            if (partStr.includes('Content-Type: image/')) {
+              // Extract the MIME type
+              const mimeMatch = partStr.match(/Content-Type: (image\/\w+)/);
+              if (mimeMatch) {
+                imageMimeType = mimeMatch[1];
+              }
+
+              // Find the end of headers (double CRLF)
+              const headerEndIndex = part.indexOf('\r\n\r\n');
+              if (headerEndIndex !== -1) {
+                // Image data starts after the double CRLF
+                const imageStartIndex = headerEndIndex + 4;
+                // Image data ends at the last CRLF (or CRLFCRLF)
+                let imageEndIndex = part.length - 2; // account for trailing CRLF
+                
+                // Look for trailing CRLF
+                if (part[part.length - 2] === 13 && part[part.length - 1] === 10) {
+                  imageEndIndex = part.length - 2;
+                } else if (part[part.length - 4] === 13 && part[part.length - 3] === 10) {
+                  imageEndIndex = part.length - 4;
+                }
+
+                imageData = part.subarray(imageStartIndex, imageEndIndex);
+                break;
+              }
+            }
+          }
+
+          if (!imageData || imageData.length === 0) {
             return res.status(400).json({ message: "No image data found" });
           }
 
           // Convert to base64 data URL
-          const base64Data = Buffer.from(imageData, 'binary').toString('base64');
-          const dataUrl = `data:${contentType};base64,${base64Data}`;
+          const base64Data = imageData.toString('base64');
+          const dataUrl = `data:${imageMimeType};base64,${base64Data}`;
 
           // Update user profile image
           await storage.updateUser(userId, {
             profileImageUrl: dataUrl,
           });
+
+          console.log("[Upload] Profile image updated for user:", userId);
+          console.log("[Upload] Image MIME type:", imageMimeType);
+          console.log("[Upload] Image size:", imageData.length, "bytes (binary)");
+          console.log("[Upload] Base64 size:", base64Data.length, "bytes");
 
           res.json({ success: true, imageUrl: dataUrl });
         } catch (error) {
@@ -451,6 +494,15 @@ export async function registerRoutes(
         });
       }
 
+      // Create notification for new order
+      await storage.createNotification({
+        userId,
+        type: 'order',
+        title: 'Order Confirmed! 🎉',
+        message: `Your order #${order.id.slice(0, 8)} has been confirmed. Total: $${total.toFixed(2)}`,
+        link: '/account',
+      });
+
       // Get complete order with items
       const orderItems = await storage.getOrderItems(order.id);
 
@@ -516,6 +568,27 @@ export async function registerRoutes(
           deliveredAt: deliveredAt ? new Date(deliveredAt) : undefined,
           updatedAt: new Date(),
         }).where(eq(orders.id, req.params.id));
+      }
+      
+      // Create notification for order status update
+      if (order && status) {
+        const statusMessages = {
+          pending: { title: 'Order Pending', message: 'Your order is being processed.' },
+          shipped: { title: 'Order Shipped! 📦', message: `Your order #${order.id.slice(0, 8)} has been shipped${trackingNumber ? ` (Tracking: ${trackingNumber})` : ''}.` },
+          delivered: { title: 'Order Delivered! ✅', message: `Your order #${order.id.slice(0, 8)} has been delivered. Enjoy your products!` },
+          cancelled: { title: 'Order Cancelled', message: `Your order #${order.id.slice(0, 8)} has been cancelled.` },
+        };
+        
+        const notification = statusMessages[status as keyof typeof statusMessages];
+        if (notification) {
+          await storage.createNotification({
+            userId: order.userId,
+            type: 'order',
+            title: notification.title,
+            message: notification.message,
+            link: '/account',
+          });
+        }
       }
       
       const updatedOrder = await storage.getOrder(req.params.id);
@@ -757,6 +830,55 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Failed to delete blog post:", error);
       res.status(500).json({ message: "Failed to delete blog post" });
+    }
+  });
+
+  // Notification routes
+  app.get('/api/notifications', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const result = await storage.getUserNotifications(userId);
+      res.json(result);
+    } catch (error) {
+      console.error("Failed to fetch notifications:", error);
+      res.status(500).json({ message: "Failed to fetch notifications" });
+    }
+  });
+
+  app.patch('/api/notifications/:id/read', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { id } = req.params;
+      
+      await storage.markNotificationAsRead(id, userId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Failed to mark notification as read:", error);
+      res.status(500).json({ message: "Failed to mark notification as read" });
+    }
+  });
+
+  app.patch('/api/notifications/mark-all-read', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      await storage.markAllNotificationsAsRead(userId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Failed to mark all notifications as read:", error);
+      res.status(500).json({ message: "Failed to mark all notifications as read" });
+    }
+  });
+
+  app.delete('/api/notifications/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { id } = req.params;
+      
+      await storage.deleteNotification(id, userId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Failed to delete notification:", error);
+      res.status(500).json({ message: "Failed to delete notification" });
     }
   });
 

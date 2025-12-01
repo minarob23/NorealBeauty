@@ -110,7 +110,7 @@ export default function AdminProductsAnalytics() {
       price: p.price,
     }));
 
-  const COLORS = ['#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#3b82f6', '#ef4444', '#06b6d4'];
+  const COLORS = ['#a855f7', '#ec4899', '#f59e0b', '#10b981', '#3b82f6', '#ef4444', '#14b8a6', '#eab308'];
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -125,17 +125,17 @@ export default function AdminProductsAnalytics() {
 
       {/* Stats Overview */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
-        <Card className="border-l-4 border-l-purple-500 hover:shadow-lg transition-shadow">
+        <Card className="border-l-4 border-l-purple-500 dark:border-l-purple-400 hover:shadow-lg transition-shadow bg-gradient-to-br from-purple-50/50 to-transparent dark:from-purple-950/20">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Total Revenue
             </CardTitle>
-            <div className="h-10 w-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+            <div className="h-10 w-10 rounded-full bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center">
               <DollarSign className="h-5 w-5 text-purple-600 dark:text-purple-400" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-purple-600">
+            <div className="text-3xl font-bold text-purple-700 dark:text-purple-400">
               ${totalRevenue.toFixed(2)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
@@ -144,17 +144,17 @@ export default function AdminProductsAnalytics() {
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-blue-500 hover:shadow-lg transition-shadow">
+        <Card className="border-l-4 border-l-blue-500 dark:border-l-blue-400 hover:shadow-lg transition-shadow bg-gradient-to-br from-blue-50/50 to-transparent dark:from-blue-950/20">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Total Orders
             </CardTitle>
-            <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+            <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center">
               <ShoppingCart className="h-5 w-5 text-blue-600 dark:text-blue-400" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-blue-600">
+            <div className="text-3xl font-bold text-blue-700 dark:text-blue-400">
               {totalOrders}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
@@ -163,17 +163,17 @@ export default function AdminProductsAnalytics() {
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-green-500 hover:shadow-lg transition-shadow">
+        <Card className="border-l-4 border-l-emerald-500 dark:border-l-emerald-400 hover:shadow-lg transition-shadow bg-gradient-to-br from-emerald-50/50 to-transparent dark:from-emerald-950/20">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Total Products
             </CardTitle>
-            <div className="h-10 w-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-              <Package className="h-5 w-5 text-green-600 dark:text-green-400" />
+            <div className="h-10 w-10 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center">
+              <Package className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-green-600">
+            <div className="text-3xl font-bold text-emerald-700 dark:text-emerald-400">
               {totalProducts}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
@@ -182,17 +182,17 @@ export default function AdminProductsAnalytics() {
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-orange-500 hover:shadow-lg transition-shadow">
+        <Card className="border-l-4 border-l-orange-500 dark:border-l-orange-400 hover:shadow-lg transition-shadow bg-gradient-to-br from-orange-50/50 to-transparent dark:from-orange-950/20">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Avg Order Value
             </CardTitle>
-            <div className="h-10 w-10 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+            <div className="h-10 w-10 rounded-full bg-orange-100 dark:bg-orange-900/40 flex items-center justify-center">
               <TrendingUp className="h-5 w-5 text-orange-600 dark:text-orange-400" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-orange-600">
+            <div className="text-3xl font-bold text-orange-700 dark:text-orange-400">
               ${avgOrderValue.toFixed(2)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
@@ -217,62 +217,62 @@ export default function AdminProductsAnalytics() {
 
           return (
             <>
-              <Card className="border-l-4 border-l-yellow-500">
+              <Card className="border-l-4 border-l-pink-500 dark:border-l-pink-400 hover:shadow-lg transition-shadow bg-gradient-to-br from-pink-50/50 to-transparent dark:from-pink-950/20">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">
                     Pending Orders
                   </CardTitle>
-                  <div className="h-10 w-10 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center">
-                    <ShoppingCart className="h-5 w-5 text-yellow-600" />
+                  <div className="h-10 w-10 rounded-full bg-pink-100 dark:bg-pink-900/40 flex items-center justify-center">
+                    <ShoppingCart className="h-5 w-5 text-pink-600 dark:text-pink-400" />
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-yellow-600">{pendingOrders}</div>
+                  <div className="text-3xl font-bold text-pink-700 dark:text-pink-400">{pendingOrders}</div>
                   <p className="text-xs text-muted-foreground mt-1">Awaiting processing</p>
                 </CardContent>
               </Card>
 
-              <Card className="border-l-4 border-l-cyan-500">
+              <Card className="border-l-4 border-l-cyan-500 dark:border-l-cyan-400 hover:shadow-lg transition-shadow bg-gradient-to-br from-cyan-50/50 to-transparent dark:from-cyan-950/20">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">
                     Shipped Orders
                   </CardTitle>
-                  <div className="h-10 w-10 rounded-full bg-cyan-100 dark:bg-cyan-900/30 flex items-center justify-center">
-                    <Package className="h-5 w-5 text-cyan-600" />
+                  <div className="h-10 w-10 rounded-full bg-cyan-100 dark:bg-cyan-900/40 flex items-center justify-center">
+                    <Package className="h-5 w-5 text-cyan-600 dark:text-cyan-400" />
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-cyan-600">{shippedOrders}</div>
+                  <div className="text-3xl font-bold text-cyan-700 dark:text-cyan-400">{shippedOrders}</div>
                   <p className="text-xs text-muted-foreground mt-1">In transit</p>
                 </CardContent>
               </Card>
 
-              <Card className="border-l-4 border-l-green-500">
+              <Card className="border-l-4 border-l-lime-500 dark:border-l-lime-400 hover:shadow-lg transition-shadow bg-gradient-to-br from-lime-50/50 to-transparent dark:from-lime-950/20">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">
                     Completed Orders
                   </CardTitle>
-                  <div className="h-10 w-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                    <ShoppingCart className="h-5 w-5 text-green-600" />
+                  <div className="h-10 w-10 rounded-full bg-lime-100 dark:bg-lime-900/40 flex items-center justify-center">
+                    <ShoppingCart className="h-5 w-5 text-lime-600 dark:text-lime-400" />
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-green-600">{completedOrders}</div>
+                  <div className="text-3xl font-bold text-lime-700 dark:text-lime-400">{completedOrders}</div>
                   <p className="text-xs text-muted-foreground mt-1">Successfully delivered</p>
                 </CardContent>
               </Card>
 
-              <Card className="border-l-4 border-l-red-500">
+              <Card className="border-l-4 border-l-rose-500 dark:border-l-rose-400 hover:shadow-lg transition-shadow bg-gradient-to-br from-rose-50/50 to-transparent dark:from-rose-950/20">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">
                     Cancelled Orders
                   </CardTitle>
-                  <div className="h-10 w-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                    <ShoppingCart className="h-5 w-5 text-red-600" />
+                  <div className="h-10 w-10 rounded-full bg-rose-100 dark:bg-rose-900/40 flex items-center justify-center">
+                    <ShoppingCart className="h-5 w-5 text-rose-600 dark:text-rose-400" />
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-red-600">{cancelledOrders}</div>
+                  <div className="text-3xl font-bold text-rose-700 dark:text-rose-400">{cancelledOrders}</div>
                   <p className="text-xs text-muted-foreground mt-1">Cancelled</p>
                 </CardContent>
               </Card>
@@ -282,10 +282,10 @@ export default function AdminProductsAnalytics() {
       </div>
       <div className="grid gap-6 md:grid-cols-2 mb-6">
         {/* Order Status Distribution */}
-        <Card className="border-t-4 border-t-indigo-500">
+        <Card className="border-t-4 border-t-indigo-600">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <ShoppingCart className="h-5 w-5 text-indigo-500" />
+              <ShoppingCart className="h-5 w-5 text-indigo-600" />
               Order Status Distribution
             </CardTitle>
             <CardDescription>
@@ -294,8 +294,8 @@ export default function AdminProductsAnalytics() {
           </CardHeader>
           <CardContent>
             {(() => {
-              const statusDistribution = orders.reduce((acc: any, order) => {
-                const existing = acc.find(item => item.name === order.status);
+              const statusDistribution = orders.reduce((acc: Array<{name: string, value: number}>, order) => {
+                const existing = acc.find((item: {name: string, value: number}) => item.name === order.status);
                 if (existing) {
                   existing.value += 1;
                 } else {
@@ -320,11 +320,12 @@ export default function AdminProductsAnalytics() {
                       fill="#8884d8"
                       dataKey="value"
                     >
-                      {statusDistribution.map((entry, index) => {
-                        let color = '#3b82f6';
-                        if (entry.name === 'Completed') color = '#10b981';
-                        if (entry.name === 'Pending') color = '#f59e0b';
-                        if (entry.name === 'Shipped') color = '#06b6d4';
+                      {statusDistribution.map((entry: any, index: number) => {
+                        let color = '#6366f1'; // Default indigo
+                        if (entry.name === 'Pending') color = '#ec4899'; // Pink - matches card
+                        if (entry.name === 'Shipped') color = '#06b6d4'; // Cyan - matches card
+                        if (entry.name === 'Completed') color = '#84cc16'; // Lime - matches card
+                        if (entry.name === 'Cancelled') color = '#f43f5e'; // Rose - matches card
                         return <Cell key={`cell-${index}`} fill={color} />;
                       })}
                     </Pie>
@@ -337,10 +338,10 @@ export default function AdminProductsAnalytics() {
         </Card>
 
         {/* Daily Order Volume */}
-        <Card className="border-t-4 border-t-cyan-500">
+        <Card className="border-t-4 border-t-cyan-600">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5 text-cyan-500" />
+              <BarChart3 className="h-5 w-5 text-cyan-600" />
               Orders by Day (Last 30 Days)
             </CardTitle>
             <CardDescription>
@@ -349,7 +350,7 @@ export default function AdminProductsAnalytics() {
           </CardHeader>
           <CardContent>
             {(() => {
-              const dailyOrders = {};
+              const dailyOrders: Record<string, number> = {};
               const today = new Date();
               const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
 
@@ -392,10 +393,10 @@ export default function AdminProductsAnalytics() {
       {/* Revenue Analysis */}
       <div className="grid gap-6 md:grid-cols-2 mb-6">
         {/* Revenue by Status */}
-        <Card className="border-t-4 border-t-emerald-500">
+        <Card className="border-t-4 border-t-teal-600">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5 text-emerald-500" />
+              <DollarSign className="h-5 w-5 text-teal-600" />
               Revenue by Order Status
             </CardTitle>
             <CardDescription>
@@ -404,8 +405,8 @@ export default function AdminProductsAnalytics() {
           </CardHeader>
           <CardContent>
             {(() => {
-              const revenueByStatus = orders.reduce((acc: any, order) => {
-                const existing = acc.find(item => item.name === order.status);
+              const revenueByStatus = orders.reduce((acc: Array<{name: string, revenue: number}>, order) => {
+                const existing = acc.find((item: {name: string, revenue: number}) => item.name === order.status);
                 const revenue = parseFloat(order.total.toString());
                 if (existing) {
                   existing.revenue += revenue;
@@ -424,10 +425,10 @@ export default function AdminProductsAnalytics() {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis type="number" />
                     <YAxis dataKey="name" type="category" width={100} />
-                    <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
+                    <Tooltip formatter={(value) => `$${Number(value).toFixed(2)}`} />
                     <Legend />
-                    <Bar dataKey="revenue" fill="#10b981" name="Revenue ($)">
-                      {revenueByStatus.map((entry, index) => (
+                    <Bar dataKey="revenue" fill="#14b8a6" name="Revenue ($)">
+                      {revenueByStatus.map((entry: any, index: number) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Bar>
@@ -439,10 +440,10 @@ export default function AdminProductsAnalytics() {
         </Card>
 
         {/* Average Order Value Over Time */}
-        <Card className="border-t-4 border-t-rose-500">
+        <Card className="border-t-4 border-t-red-600">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-rose-500" />
+              <TrendingUp className="h-5 w-5 text-red-600" />
               Cumulative Revenue Trend
             </CardTitle>
             <CardDescription>
@@ -480,7 +481,7 @@ export default function AdminProductsAnalytics() {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="date" />
                     <YAxis />
-                    <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
+                    <Tooltip formatter={(value) => `$${Number(value).toFixed(2)}`} />
                     <Legend />
                     <Line
                       type="monotone"
@@ -501,10 +502,10 @@ export default function AdminProductsAnalytics() {
       {/* Charts Section */}
       <div className="grid gap-6 md:grid-cols-2 mb-6">
         {/* Revenue & Orders Trend */}
-        <Card className="border-t-4 border-t-purple-500">
+        <Card className="border-t-4 border-t-purple-600">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-purple-500" />
+              <TrendingUp className="h-5 w-5 text-purple-600" />
               Revenue & Orders Trend
             </CardTitle>
             <CardDescription>
@@ -524,7 +525,7 @@ export default function AdminProductsAnalytics() {
                   yAxisId="left"
                   type="monotone"
                   dataKey="revenue"
-                  stroke="#8b5cf6"
+                  stroke="#9333ea"
                   strokeWidth={2}
                   name="Revenue ($)"
                 />
@@ -532,7 +533,7 @@ export default function AdminProductsAnalytics() {
                   yAxisId="right"
                   type="monotone"
                   dataKey="orders"
-                  stroke="#ec4899"
+                  stroke="#d946ef"
                   strokeWidth={2}
                   name="Orders"
                 />
@@ -542,10 +543,10 @@ export default function AdminProductsAnalytics() {
         </Card>
 
         {/* Product Category Distribution */}
-        <Card className="border-t-4 border-t-pink-500">
+        <Card className="border-t-4 border-t-pink-600">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <PieChartIcon className="h-5 w-5 text-pink-500" />
+              <PieChartIcon className="h-5 w-5 text-pink-600" />
               Product Categories
             </CardTitle>
             <CardDescription>
@@ -581,10 +582,10 @@ export default function AdminProductsAnalytics() {
       {/* Additional Charts */}
       <div className="grid gap-6 md:grid-cols-2">
         {/* Top Products by Price */}
-        <Card className="border-t-4 border-t-blue-500">
+        <Card className="border-t-4 border-t-blue-600">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5 text-blue-500" />
+              <BarChart3 className="h-5 w-5 text-blue-600" />
               Top Products by Price
             </CardTitle>
             <CardDescription>
@@ -599,7 +600,7 @@ export default function AdminProductsAnalytics() {
                 <YAxis dataKey="name" type="category" width={150} />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="price" fill="#3b82f6" name="Price ($)">
+                <Bar dataKey="price" fill="#2563eb" name="Price ($)">
                   {topProducts.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
@@ -610,10 +611,10 @@ export default function AdminProductsAnalytics() {
         </Card>
 
         {/* Stock Status */}
-        <Card className="border-t-4 border-t-green-500">
+        <Card className="border-t-4 border-t-green-600">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Package className="h-5 w-5 text-green-500" />
+              <Package className="h-5 w-5 text-green-600" />
               Inventory Status
             </CardTitle>
             <CardDescription>
@@ -633,8 +634,8 @@ export default function AdminProductsAnalytics() {
                   fill="#8884d8"
                   dataKey="value"
                 >
-                  <Cell fill="#10b981" />
-                  <Cell fill="#ef4444" />
+                  <Cell fill="#22c55e" />
+                  <Cell fill="#dc2626" />
                 </Pie>
                 <Tooltip />
               </PieChart>

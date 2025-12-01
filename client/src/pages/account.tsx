@@ -32,6 +32,7 @@ export default function Account() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [imageLoadError, setImageLoadError] = useState(false);
 
   const { data: addresses = [], isLoading: addressesLoading } = useQuery<Address[]>({
     queryKey: ["/api/addresses"],
@@ -63,6 +64,7 @@ export default function Account() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      setImageLoadError(false);
       toast({
         title: "Success",
         description: "Profile image updated successfully",
@@ -243,11 +245,15 @@ export default function Account() {
                       htmlFor="profile-image-upload"
                       className="cursor-pointer relative block"
                     >
-                      {user.profileImageUrl ? (
+                      {user.profileImageUrl && !imageLoadError ? (
                         <img
                           src={user.profileImageUrl}
                           alt="Profile"
                           className="h-24 w-24 rounded-full object-cover ring-2 ring-offset-2 ring-purple-500/20 group-hover:ring-purple-500/50 transition-all"
+                          onError={() => {
+                            console.error("Failed to load profile image:", user.profileImageUrl);
+                            setImageLoadError(true);
+                          }}
                         />
                       ) : (
                         <div className="flex h-24 w-24 items-center justify-center rounded-full bg-muted ring-2 ring-offset-2 ring-purple-500/20 group-hover:ring-purple-500/50 transition-all">

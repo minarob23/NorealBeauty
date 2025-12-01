@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "wouter";
-import { ChevronRight, Shield, Plus, UserPlus, X } from "lucide-react";
+import { ChevronRight, Shield, Plus, UserPlus, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
   DialogContent,
@@ -42,6 +43,7 @@ interface Admin {
 export default function OwnerAdminManagement() {
   const { toast } = useToast();
   const [admins, setAdmins] = useState<Admin[]>([]);
+  const [isPageLoading, setIsPageLoading] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -57,16 +59,21 @@ export default function OwnerAdminManagement() {
 
   const fetchAdmins = async () => {
     try {
+      setIsPageLoading(true);
       const response = await fetch("/api/owner/admins", {
         credentials: "include",
       });
 
       if (response.ok) {
         const data = await response.json();
+        // Simulate a minimum loading time for better UX
+        await new Promise(resolve => setTimeout(resolve, 800));
         setAdmins(data);
       }
     } catch (error) {
       console.error("Failed to fetch admins:", error);
+    } finally {
+      setIsPageLoading(false);
     }
   };
 
@@ -351,8 +358,24 @@ export default function OwnerAdminManagement() {
           </Dialog>
         </div>
 
-        {/* Admins List */}
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+        {/* Beautiful Loading State */}
+        {isPageLoading ? (
+          <div className="flex flex-col items-center justify-center min-h-[60vh]">
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+              className="h-16 w-16 rounded-full border-4 border-purple-200 dark:border-purple-800 border-t-purple-600 dark:border-t-purple-400 mb-6"
+            />
+            <h2 className="text-xl font-semibold text-foreground mb-2">
+              Loading Admin Management
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Please wait...
+            </p>
+          </div>
+        ) : (
+          /* Admins List */
+          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
           {admins.length === 0 ? (
             <div className="col-span-full">
               <Card className="border-2 border-dashed border-purple-200 dark:border-purple-800">
@@ -439,6 +462,7 @@ export default function OwnerAdminManagement() {
             ))
           )}
         </div>
+        )}
 
         {/* Delete Confirmation Dialog */}
         <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

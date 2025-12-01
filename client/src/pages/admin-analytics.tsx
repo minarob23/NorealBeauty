@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Users, UserCheck, Shield, Calendar, TrendingUp, Activity } from "lucide-react";
+import { Users, UserCheck, Shield, Calendar, TrendingUp, Activity, BarChart3, Loader2 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { motion } from "framer-motion";
 import {
   LineChart,
   Line,
@@ -68,7 +70,19 @@ export default function AdminAnalytics() {
   if (loading) {
     return (
       <div className="container mx-auto py-8 px-4">
-        <div className="text-center py-8">Loading analytics...</div>
+        <div className="flex flex-col items-center justify-center min-h-[60vh]">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            className="h-16 w-16 rounded-full border-4 border-purple-200 dark:border-purple-800 border-t-purple-600 dark:border-t-purple-400 mb-6"
+          />
+          <h2 className="text-xl font-semibold text-foreground mb-2">
+            Loading Analytics
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Please wait...
+          </p>
+        </div>
       </div>
     );
   }
@@ -93,7 +107,7 @@ export default function AdminAnalytics() {
     { name: "Admins", value: stats.admins },
   ];
 
-  const COLORS = ['#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#3b82f6'];
+  const COLORS = ['#a855f7', '#ec4899', '#f59e0b', '#10b981', '#3b82f6', '#ef4444', '#14b8a6', '#eab308'];
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -106,26 +120,30 @@ export default function AdminAnalytics() {
 
       {/* Stats Cards */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="hover:border-purple-500 transition-colors">
+        <Card className="border-l-4 border-l-purple-500 dark:border-l-purple-400 hover:shadow-lg transition-shadow bg-gradient-to-br from-purple-50/50 to-transparent dark:from-purple-950/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-            <Users className="h-4 w-4 text-purple-500" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Users</CardTitle>
+            <div className="h-10 w-10 rounded-full bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center">
+              <Users className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.total}</div>
+            <div className="text-3xl font-bold text-purple-700 dark:text-purple-400">{stats.total}</div>
             <p className="text-xs text-muted-foreground">
               Registered accounts
             </p>
           </CardContent>
         </Card>
 
-        <Card className="hover:border-green-500 transition-colors">
+        <Card className="border-l-4 border-l-emerald-500 dark:border-l-emerald-400 hover:shadow-lg transition-shadow bg-gradient-to-br from-emerald-50/50 to-transparent dark:from-emerald-950/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Verified Users</CardTitle>
-            <UserCheck className="h-4 w-4 text-green-500" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">Verified Users</CardTitle>
+            <div className="h-10 w-10 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center">
+              <UserCheck className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.verified}</div>
+            <div className="text-3xl font-bold text-emerald-700 dark:text-emerald-400">{stats.verified}</div>
             <p className="text-xs text-muted-foreground">
               {stats.total > 0
                 ? `${Math.round((stats.verified / stats.total) * 100)}% of total`
@@ -134,26 +152,30 @@ export default function AdminAnalytics() {
           </CardContent>
         </Card>
 
-        <Card className="hover:border-blue-500 transition-colors">
+        <Card className="border-l-4 border-l-blue-500 dark:border-l-blue-400 hover:shadow-lg transition-shadow bg-gradient-to-br from-blue-50/50 to-transparent dark:from-blue-950/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Administrators</CardTitle>
-            <Shield className="h-4 w-4 text-blue-500" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">Administrators</CardTitle>
+            <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center">
+              <Shield className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.admins}</div>
+            <div className="text-3xl font-bold text-blue-700 dark:text-blue-400">{stats.admins}</div>
             <p className="text-xs text-muted-foreground">
               Admin accounts
             </p>
           </CardContent>
         </Card>
 
-        <Card className="hover:border-orange-500 transition-colors">
+        <Card className="border-l-4 border-l-orange-500 dark:border-l-orange-400 hover:shadow-lg transition-shadow bg-gradient-to-br from-orange-50/50 to-transparent dark:from-orange-950/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Recent Signups</CardTitle>
-            <Calendar className="h-4 w-4 text-orange-500" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">Recent Signups</CardTitle>
+            <div className="h-10 w-10 rounded-full bg-orange-100 dark:bg-orange-900/40 flex items-center justify-center">
+              <Calendar className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.recentSignups}</div>
+            <div className="text-3xl font-bold text-orange-700 dark:text-orange-400">{stats.recentSignups}</div>
             <p className="text-xs text-muted-foreground">
               Last 7 days
             </p>

@@ -38,12 +38,15 @@ async function upsertUser(
   claims: any,
   authProvider: string = "google"
 ) {
+  const profileImageUrl = claims["profile_image_url"] || claims["picture"];
+  console.log("[Auth] Upserting user with profileImageUrl:", profileImageUrl || "not provided");
+  
   await storage.upsertUser({
     id: claims["sub"],
     email: claims["email"],
     firstName: claims["first_name"] || claims["given_name"],
     lastName: claims["last_name"] || claims["family_name"],
-    profileImageUrl: claims["profile_image_url"] || claims["picture"],
+    profileImageUrl,
     authProvider,
     emailVerified: false, // Require verification for all users
   });
@@ -67,6 +70,10 @@ export async function setupAuth(app: Express) {
         },
         async (req: any, accessToken: string, refreshToken: string, profile: any, done: any) => {
           try {
+            console.log("[Google OAuth] Full profile object:", JSON.stringify(profile, null, 2));
+            console.log("[Google OAuth] Profile photos:", profile.photos);
+            console.log("[Google OAuth] Profile picture URL:", profile.photos?.[0]?.value);
+            
             const googleId = profile.id;
             const email = profile.emails?.[0]?.value;
 
@@ -78,26 +85,43 @@ export async function setupAuth(app: Express) {
               // New user - create with Google ID
               userId = googleId;
               const verificationToken = randomUUID();
+              const profileImageUrl = profile.photos?.[0]?.value;
+              
+              console.log("[Google OAuth] Creating new user:", email);
+              console.log("[Google OAuth] Profile image URL:", profileImageUrl);
 
               const createdUser = await storage.upsertUser({
                 id: userId,
                 email: email,
                 firstName: profile.name?.givenName,
                 lastName: profile.name?.familyName,
-                profileImageUrl: profile.photos?.[0]?.value,
+                profileImageUrl,
                 authProvider: "google",
                 emailVerified: false,
                 verificationToken: verificationToken,
               });
+
+              // Send welcome notification to new user
+              await storage.createNotification({
+                userId,
+                type: 'account',
+                title: 'Welcome to Noreal Beauty! ✨',
+                message: 'Thank you for joining us! Discover our premium skincare products and exclusive offers.',
+                link: '/shop',
+              });
             } else {
               // Existing user - use their database ID
               userId = existingUser.id;
+              const profileImageUrl = profile.photos?.[0]?.value;
+              
+              console.log("[Google OAuth] Updating existing user:", email);
+              console.log("[Google OAuth] Profile image URL:", profileImageUrl);
 
               // Update user profile and login stats
               await storage.updateUser(userId, {
                 firstName: profile.name?.givenName,
                 lastName: profile.name?.familyName,
-                profileImageUrl: profile.photos?.[0]?.value,
+                profileImageUrl,
                 authProvider: "google",
               });
 
@@ -290,7 +314,13 @@ export async function setupAuth(app: Express) {
     app.get(
       "/api/login/google",
       passport.authenticate("google", {
-        scope: ["profile", "email"],
+        scope: [
+          "profile",
+          "email",
+          "https://www.googleapis.com/auth/userinfo.profile"
+        ],
+        accessType: 'offline',
+        prompt: 'consent'
       })
     );
 
@@ -308,6 +338,9 @@ export async function setupAuth(app: Express) {
             // Fetch fresh user data from database
             const freshUserData = await storage.getUser(userId);
             
+            console.log("[Google Callback] User ID:", userId);
+            console.log("[Google Callback] Fresh profile image URL:", freshUserData?.profileImageUrl);
+            
             // Update session user with fresh data if found
             if (freshUserData) {
               (req.user as any) = {
@@ -322,6 +355,8 @@ export async function setupAuth(app: Express) {
                 refresh_token: (req.user as any)?.refresh_token,
                 expires_at: (req.user as any)?.expires_at,
               };
+              
+              console.log("[Google Callback] Session updated with picture:", freshUserData.profileImageUrl);
             }
           }
 
@@ -398,6 +433,15 @@ export async function setupAuth(app: Express) {
         isAdmin: false,
         emailVerified: true,
         verificationToken: null,
+      });
+
+      // Send welcome notification to new user
+      await storage.createNotification({
+        userId,
+        type: 'account',
+        title: 'Welcome to Noreal Beauty! ✨',
+        message: 'Thank you for joining us! Discover our premium skincare products and exclusive offers.',
+        link: '/shop',
       });
 
       console.log("[Auth] User registered successfully:", userId);

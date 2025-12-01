@@ -35,6 +35,7 @@ import { getTranslations, type Language } from "@/lib/i18n";
 import { useTheme } from "@/components/theme-provider";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
+import { NotificationBell } from "@/components/notification-bell";
 
 const languages: { code: Language; name: string }[] = [
   { code: "en", name: "English" },
@@ -57,7 +58,7 @@ export function Header({ onSearch }: HeaderProps) {
   const t = getTranslations(language);
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
 
-  const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+  const cartCount = cartItems.length; // Show number of unique items instead of total quantity
   const wishlistCount = wishlistItems.length;
 
   const blogLabel = language === "en" ? "Blog" : language === "fr" ? "Blog" : "Blog";
@@ -292,13 +293,16 @@ export function Header({ onSearch }: HeaderProps) {
                 {wishlistCount > 0 && (
                   <Badge
                     variant="destructive"
-                    className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center p-0 text-xs"
+                    className="absolute -right-1.5 -top-1.5 h-5 min-w-5 flex items-center justify-center px-1 text-xs font-semibold rounded-full"
                   >
-                    {wishlistCount}
+                    {wishlistCount > 99 ? '99+' : wishlistCount}
                   </Badge>
                 )}
               </Button>
             </Link>
+
+            {/* Notification Bell - Only for authenticated users */}
+            {isAuthenticated && <NotificationBell />}
 
             <Button
               variant="ghost"
@@ -311,9 +315,9 @@ export function Header({ onSearch }: HeaderProps) {
               {cartCount > 0 && (
                 <Badge
                   variant="destructive"
-                  className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center p-0 text-xs"
+                  className="absolute -right-1.5 -top-1.5 h-5 min-w-5 flex items-center justify-center px-1 text-xs font-semibold rounded-full"
                 >
-                  {cartCount}
+                  {cartCount > 99 ? '99+' : cartCount}
                 </Badge>
               )}
             </Button>
