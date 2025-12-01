@@ -17,5 +17,5 @@ RUN npm run build
 # Expose port
 EXPOSE 5000
 
-# Start the application with database migrations (with timeout)
-CMD npm run db:push -- --skip-generate && npm run db:migrate-products && npm start
+# Start the application with database migrations
+CMD npm run db:push && npm run db:migrate-products && npm start
