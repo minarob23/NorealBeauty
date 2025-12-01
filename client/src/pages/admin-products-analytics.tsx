@@ -202,11 +202,6 @@ export default function AdminProductsAnalytics() {
         </Card>
       </div>
 
-      {/* Orders Section */}
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold mb-4"></h2>
-      </div>
-
       {/* Order Status Cards */}
       <div className="grid gap-6 md:grid-cols-4 mb-6">
         {(() => {
