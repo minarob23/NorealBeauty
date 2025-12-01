@@ -4,7 +4,7 @@
     "builder": "DOCKERFILE"
   },
   "deploy": {
-    "startCommand": "npm run db:push && npm run db:migrate-products && npm start",
+    "startCommand": "bash -c 'npm run db:push > /dev/null 2>&1 & npm run db:migrate-products > /dev/null 2>&1 & npm start'",
     "healthcheckPath": "/_health",
     "healthcheckTimeout": 100,
     "restartPolicyType": "ON_FAILURE",

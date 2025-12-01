@@ -18,4 +18,5 @@ RUN npm run build
 EXPOSE 5000
 
 # Start the application with database migrations
-CMD npm run db:push && npm run db:migrate-products && npm start
+# Run migrations in background so app starts immediately
+CMD bash -c "npm run db:push > /dev/null 2>&1 & npm run db:migrate-products > /dev/null 2>&1 & npm start"
