@@ -561,13 +561,27 @@ export async function registerRoutes(
       const order = await storage.updateOrderStatus(req.params.id, status);
       
       // Update tracking info if provided
-      if (trackingNumber || shippedAt || deliveredAt) {
-        await db.update(orders).set({
-          trackingNumber: trackingNumber ?? undefined,
-          shippedAt: shippedAt ? new Date(shippedAt) : undefined,
-          deliveredAt: deliveredAt ? new Date(deliveredAt) : undefined,
+      if (trackingNumber !== undefined || shippedAt !== undefined || deliveredAt !== undefined) {
+        const updateData: {
+          trackingNumber?: string;
+          shippedAt?: Date;
+          deliveredAt?: Date;
+          updatedAt: Date;
+        } = {
           updatedAt: new Date(),
-        }).where(eq(orders.id, req.params.id));
+        };
+        
+        if (trackingNumber !== undefined && trackingNumber !== null) {
+          updateData.trackingNumber = trackingNumber;
+        }
+        if (shippedAt) {
+          updateData.shippedAt = new Date(shippedAt);
+        }
+        if (deliveredAt) {
+          updateData.deliveredAt = new Date(deliveredAt);
+        }
+        
+        await db.update(orders).set(updateData).where(eq(orders.id, req.params.id));
       }
       
       // Create notification for order status update
