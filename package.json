@@ -11,7 +11,7 @@
     "build": "tsx script/build.ts",
     "start": "NODE_ENV=production node dist/index.cjs",
     "check": "tsc",
-    "db:push": "drizzle-kit push",
+    "db:push": "drizzle-kit push --force",
     "db:migrate-products": "tsx server/migrations/add-products-table.ts",
     "create-admin": "tsx server/createAdmin.ts",
     "create-owner": "tsx server/createOwner.ts"
