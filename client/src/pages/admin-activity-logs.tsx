@@ -150,12 +150,42 @@ export default function AdminActivityLogs() {
               <Table>
                 <TableHeader>
                   <TableRow className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 hover:from-purple-50 hover:to-pink-50">
-                    <TableHead className="font-semibold text-foreground">Time</TableHead>
-                    <TableHead className="font-semibold text-foreground">Admin</TableHead>
-                    <TableHead className="font-semibold text-foreground">Action</TableHead>
-                    <TableHead className="font-semibold text-foreground">Target</TableHead>
-                    <TableHead className="font-semibold text-foreground">Details</TableHead>
-                    <TableHead className="font-semibold text-foreground">IP Address</TableHead>
+                    <TableHead className="font-bold text-foreground text-sm uppercase tracking-wide">
+                      <div className="flex items-center gap-2">
+                        <div className="h-2 w-2 rounded-full bg-purple-500"></div>
+                        Time
+                      </div>
+                    </TableHead>
+                    <TableHead className="font-bold text-foreground text-sm uppercase tracking-wide">
+                      <div className="flex items-center gap-2">
+                        <div className="h-2 w-2 rounded-full bg-blue-500"></div>
+                        Admin
+                      </div>
+                    </TableHead>
+                    <TableHead className="font-bold text-foreground text-sm uppercase tracking-wide">
+                      <div className="flex items-center gap-2">
+                        <div className="h-2 w-2 rounded-full bg-green-500"></div>
+                        Action
+                      </div>
+                    </TableHead>
+                    <TableHead className="font-bold text-foreground text-sm uppercase tracking-wide">
+                      <div className="flex items-center gap-2">
+                        <div className="h-2 w-2 rounded-full bg-orange-500"></div>
+                        Target
+                      </div>
+                    </TableHead>
+                    <TableHead className="font-bold text-foreground text-sm uppercase tracking-wide">
+                      <div className="flex items-center gap-2">
+                        <div className="h-2 w-2 rounded-full bg-pink-500"></div>
+                        Details
+                      </div>
+                    </TableHead>
+                    <TableHead className="font-bold text-foreground text-sm uppercase tracking-wide">
+                      <div className="flex items-center gap-2">
+                        <div className="h-2 w-2 rounded-full bg-cyan-500"></div>
+                        IP Address
+                      </div>
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -164,23 +194,23 @@ export default function AdminActivityLogs() {
                     return (
                       <TableRow 
                         key={activity.id}
-                        className="hover:bg-purple-50/50 dark:hover:bg-purple-950/10 transition-colors border-b border-purple-50"
+                        className="hover:bg-gradient-to-r hover:from-purple-50/50 hover:to-pink-50/50 dark:hover:from-purple-950/20 dark:hover:to-pink-950/20 transition-all duration-200 border-b border-purple-100 dark:border-purple-900/30"
                       >
-                        <TableCell className="whitespace-nowrap">
+                        <TableCell className="py-4">
                           <div className="flex items-center gap-2">
-                            <div className="h-2 w-2 rounded-full bg-gradient-to-br from-purple-400 to-pink-400"></div>
+                            <div className="h-8 w-1 rounded-full bg-gradient-to-b from-purple-400 to-purple-600"></div>
                             <div className="text-sm font-medium">
                               {formatDate(activity.createdAt)}
                             </div>
                           </div>
                         </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white text-sm font-semibold">
+                        <TableCell className="py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="h-9 w-9 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-sm font-bold shadow-md">
                               {activity.adminName?.charAt(0).toUpperCase() || activity.adminEmail?.charAt(0).toUpperCase() || '?'}
                             </div>
                             <div className="flex flex-col">
-                              <span className="font-semibold">
+                              <span className="font-semibold text-foreground">
                                 {activity.adminName || "Unknown Admin"}
                               </span>
                               <span className="text-xs text-muted-foreground">
@@ -189,16 +219,16 @@ export default function AdminActivityLogs() {
                             </div>
                           </div>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="py-4">
                           {getActionBadge(activity.action)}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="py-4">
                           {activity.targetType ? (
-                            <div className="flex flex-col">
-                              <Badge variant="outline" className="w-fit capitalize border-purple-200">
+                            <div className="flex flex-col gap-1">
+                              <Badge variant="outline" className="w-fit capitalize border-purple-200 bg-purple-50/50 dark:bg-purple-950/20">
                                 {activity.targetType}
                               </Badge>
-                              <span className="text-xs text-muted-foreground font-mono mt-1">
+                              <span className="text-xs text-muted-foreground font-mono">
                                 {activity.targetId?.substring(0, 8)}...
                               </span>
                             </div>
@@ -206,27 +236,27 @@ export default function AdminActivityLogs() {
                             <span className="text-muted-foreground">—</span>
                           )}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="py-4">
                           {details ? (
                             <div className="text-xs space-y-1">
                               {details.role && (
-                                <Badge variant="outline" className="mr-1 border-purple-200">
+                                <Badge variant="outline" className="mr-1 border-pink-200 bg-pink-50/50 dark:bg-pink-950/20">
                                   {details.role}
                                 </Badge>
                               )}
                               {details.targetEmail && (
-                                <div className="text-muted-foreground">
-                                  📧 {details.targetEmail}
+                                <div className="text-muted-foreground flex items-center gap-1">
+                                  <span>📧</span> {details.targetEmail}
                                 </div>
                               )}
                               {details.deletedEmail && (
-                                <div className="text-destructive font-medium">
-                                  🗑️ Deleted: {details.deletedEmail}
+                                <div className="text-destructive font-medium flex items-center gap-1">
+                                  <span>🗑️</span> Deleted: {details.deletedEmail}
                                 </div>
                               )}
                               {details.updates && (
-                                <div className="text-muted-foreground">
-                                  ✏️ Updated: {Object.keys(details.updates).join(", ")}
+                                <div className="text-muted-foreground flex items-center gap-1">
+                                  <span>✏️</span> Updated: {Object.keys(details.updates).join(", ")}
                                 </div>
                               )}
                             </div>
@@ -234,10 +264,10 @@ export default function AdminActivityLogs() {
                             <span className="text-muted-foreground">—</span>
                           )}
                         </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1">
+                        <TableCell className="py-4">
+                          <div className="flex items-center gap-2 px-2 py-1 rounded-md bg-cyan-50 dark:bg-cyan-950/20 w-fit">
                             <span className="text-xs">🌐</span>
-                            <span className="text-xs font-mono text-muted-foreground">
+                            <span className="text-xs font-mono text-cyan-700 dark:text-cyan-300">
                               {activity.ipAddress || "—"}
                             </span>
                           </div>

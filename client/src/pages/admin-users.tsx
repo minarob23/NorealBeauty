@@ -211,59 +211,104 @@ export default function AdminUsers() {
               <Table>
                 <TableHeader>
                   <TableRow className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 hover:from-purple-50 hover:to-pink-50">
-                    <TableHead className="font-semibold text-foreground">Email</TableHead>
-                    <TableHead className="font-semibold text-foreground">Name</TableHead>
-                    <TableHead className="font-semibold text-foreground">Provider</TableHead>
-                    <TableHead className="font-semibold text-foreground">Role</TableHead>
-                    <TableHead className="font-semibold text-foreground">Logins</TableHead>
-                    <TableHead className="font-semibold text-foreground">Last Login</TableHead>
-                    <TableHead className="font-semibold text-foreground text-right">Actions</TableHead>
+                    <TableHead className="font-bold text-foreground text-sm uppercase tracking-wide">
+                      <div className="flex items-center gap-2">
+                        <div className="h-2 w-2 rounded-full bg-purple-500"></div>
+                        Email
+                      </div>
+                    </TableHead>
+                    <TableHead className="font-bold text-foreground text-sm uppercase tracking-wide">
+                      <div className="flex items-center gap-2">
+                        <div className="h-2 w-2 rounded-full bg-blue-500"></div>
+                        Name
+                      </div>
+                    </TableHead>
+                    <TableHead className="font-bold text-foreground text-sm uppercase tracking-wide">
+                      <div className="flex items-center gap-2">
+                        <div className="h-2 w-2 rounded-full bg-green-500"></div>
+                        Provider
+                      </div>
+                    </TableHead>
+                    <TableHead className="font-bold text-foreground text-sm uppercase tracking-wide">
+                      <div className="flex items-center gap-2">
+                        <div className="h-2 w-2 rounded-full bg-orange-500"></div>
+                        Role
+                      </div>
+                    </TableHead>
+                    <TableHead className="font-bold text-foreground text-sm uppercase tracking-wide">
+                      <div className="flex items-center gap-2">
+                        <div className="h-2 w-2 rounded-full bg-pink-500"></div>
+                        Logins
+                      </div>
+                    </TableHead>
+                    <TableHead className="font-bold text-foreground text-sm uppercase tracking-wide">
+                      <div className="flex items-center gap-2">
+                        <div className="h-2 w-2 rounded-full bg-cyan-500"></div>
+                        Last Login
+                      </div>
+                    </TableHead>
+                    <TableHead className="font-bold text-foreground text-sm uppercase tracking-wide text-right">
+                      <div className="flex items-center gap-2 justify-end">
+                        <div className="h-2 w-2 rounded-full bg-red-500"></div>
+                        Actions
+                      </div>
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredUsers.map((user, index) => (
                     <TableRow 
                       key={user.id} 
-                      className="hover:bg-purple-50/50 dark:hover:bg-purple-950/10 transition-colors border-b border-purple-50"
+                      className="hover:bg-gradient-to-r hover:from-purple-50/60 hover:to-pink-50/60 dark:hover:from-purple-950/20 dark:hover:to-pink-950/20 transition-all duration-200 border-b border-purple-100 dark:border-purple-900/30"
                     >
-                      <TableCell className="font-medium">
-                        <div className="flex items-center gap-2">
-                          <div className="h-8 w-8 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white text-sm font-semibold">
+                      <TableCell className="py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-sm font-bold shadow-md">
                             {user.email.charAt(0).toUpperCase()}
                           </div>
-                          {user.email}
+                          <span className="font-medium">{user.email}</span>
                         </div>
                       </TableCell>
-                      <TableCell className="font-medium">
-                        {user.firstName} {user.lastName}
+                      <TableCell className="py-4">
+                        <div className="flex items-center gap-2">
+                          <div className="h-7 w-1 rounded-full bg-gradient-to-b from-blue-400 to-blue-600"></div>
+                          <span className="font-semibold">
+                            {user.firstName} {user.lastName}
+                          </span>
+                        </div>
                       </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="border-purple-200">{user.authProvider}</Badge>
+                      <TableCell className="py-4">
+                        <Badge variant="outline" className="border-green-200 bg-green-50/50 dark:bg-green-950/20">
+                          {user.authProvider}
+                        </Badge>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="py-4">
                         <Badge 
                           variant={user.isAdmin ? "default" : "secondary"}
-                          className={user.isAdmin ? "bg-gradient-to-r from-purple-600 to-pink-600" : ""}
+                          className={user.isAdmin ? "bg-gradient-to-r from-orange-500 to-red-500 shadow-sm" : "bg-gray-100 dark:bg-gray-800"}
                         >
                           {user.isAdmin ? "Admin" : "User"}
                         </Badge>
                       </TableCell>
-                      <TableCell>
-                        <span className="inline-flex items-center gap-1">
-                          <span className="font-semibold">{user.loginCount || 0}</span>
-                          <span className="text-xs text-muted-foreground">times</span>
-                        </span>
+                      <TableCell className="py-4">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-pink-50 dark:bg-pink-950/20 border border-pink-200 dark:border-pink-800">
+                          <span className="font-bold text-pink-700 dark:text-pink-300">{user.loginCount || 0}</span>
+                          <span className="text-xs text-pink-600 dark:text-pink-400">times</span>
+                        </div>
                       </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {formatDate(user.lastLoginAt)}
+                      <TableCell className="py-4">
+                        <div className="text-sm text-muted-foreground flex items-center gap-2">
+                          <div className="h-1.5 w-1.5 rounded-full bg-cyan-500"></div>
+                          {formatDate(user.lastLoginAt)}
+                        </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="py-4">
                         <div className="flex gap-2 justify-end">
                           <Button
                             variant="outline"
                             size="icon"
                             onClick={() => setEditUser(user)}
-                            className="hover:bg-purple-50 hover:border-purple-300 hover:text-purple-600"
+                            className="hover:bg-purple-50 hover:border-purple-400 hover:text-purple-700 hover:shadow-md transition-all"
                           >
                             <Pencil className="h-4 w-4" />
                           </Button>
@@ -271,7 +316,7 @@ export default function AdminUsers() {
                             variant="outline"
                             size="icon"
                             onClick={() => setDeleteUserId(user.id)}
-                            className="hover:bg-red-50 hover:border-red-300 hover:text-red-600"
+                            className="hover:bg-red-50 hover:border-red-400 hover:text-red-700 hover:shadow-md transition-all"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>

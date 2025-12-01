@@ -183,106 +183,46 @@ export default function OwnerDashboard() {
               </div>
             </div>
           </CardHeader>
-          <CardContent className="pt-8">
-            <div className="space-y-6">
-              {/* Privilege Items */}
-              <div className="flex items-start gap-4 pb-6 border-b border-dashed border-amber-200">
-                <div className="mt-1">
-                  <div className="h-3 w-3 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 shadow-sm"></div>
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-lg text-purple-900 dark:text-purple-100 mb-1">
-                    Full System Access
-                  </h3>
-                  <p className="text-muted-foreground leading-relaxed">
-                    Complete control over all platform features and settings
-                  </p>
-                </div>
+          <CardContent className="pt-6">
+            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+              <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-gradient-to-r from-purple-50 to-transparent dark:from-purple-950/20 border-l-2 border-purple-400">
+                <Shield className="h-4 w-4 text-purple-600 dark:text-purple-400 flex-shrink-0" />
+                <span className="text-sm font-medium text-foreground">Full System Access</span>
               </div>
 
-              <div className="flex items-start gap-4 pb-6 border-b border-dashed border-amber-200">
-                <div className="mt-1">
-                  <div className="h-3 w-3 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 shadow-sm"></div>
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-lg text-blue-900 dark:text-blue-100 mb-1">
-                    Admin Management
-                  </h3>
-                  <p className="text-muted-foreground leading-relaxed">
-                    Create, edit, and remove admin accounts with role assignment
-                  </p>
-                </div>
+              <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-gradient-to-r from-blue-50 to-transparent dark:from-blue-950/20 border-l-2 border-blue-400">
+                <Users className="h-4 w-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                <span className="text-sm font-medium text-foreground">Admin Management</span>
               </div>
 
-              <div className="flex items-start gap-4 pb-6 border-b border-dashed border-amber-200">
-                <div className="mt-1">
-                  <div className="h-3 w-3 rounded-full bg-gradient-to-br from-green-500 to-green-600 shadow-sm"></div>
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-lg text-green-900 dark:text-green-100 mb-1">
-                    Activity Monitoring
-                  </h3>
-                  <p className="text-muted-foreground leading-relaxed">
-                    Track all admin and owner actions in real-time
-                  </p>
-                </div>
+              <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-gradient-to-r from-green-50 to-transparent dark:from-green-950/20 border-l-2 border-green-400">
+                <Activity className="h-4 w-4 text-green-600 dark:text-green-400 flex-shrink-0" />
+                <span className="text-sm font-medium text-foreground">Activity Monitoring</span>
               </div>
 
-              <div className="flex items-start gap-4 pb-6 border-b border-dashed border-amber-200">
-                <div className="mt-1">
-                  <div className="h-3 w-3 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 shadow-sm"></div>
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-lg text-orange-900 dark:text-orange-100 mb-1">
-                    System Configuration
-                  </h3>
-                  <p className="text-muted-foreground leading-relaxed">
-                    Modify critical system settings and configurations
-                  </p>
-                </div>
+              <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-gradient-to-r from-orange-50 to-transparent dark:from-orange-950/20 border-l-2 border-orange-400">
+                <Settings className="h-4 w-4 text-orange-600 dark:text-orange-400 flex-shrink-0" />
+                <span className="text-sm font-medium text-foreground">System Configuration</span>
               </div>
 
-              <div className="flex items-start gap-4 pb-6 border-b border-dashed border-amber-200">
-                <div className="mt-1">
-                  <div className="h-3 w-3 rounded-full bg-gradient-to-br from-pink-500 to-pink-600 shadow-sm"></div>
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-lg text-pink-900 dark:text-pink-100 mb-1">
-                    Advanced Analytics
-                  </h3>
-                  <p className="text-muted-foreground leading-relaxed">
-                    Access comprehensive analytics and business insights
-                  </p>
-                </div>
+              <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-gradient-to-r from-pink-50 to-transparent dark:from-pink-950/20 border-l-2 border-pink-400">
+                <BarChart3 className="h-4 w-4 text-pink-600 dark:text-pink-400 flex-shrink-0" />
+                <span className="text-sm font-medium text-foreground">Advanced Analytics</span>
               </div>
 
-              <div className="flex items-start gap-4">
-                <div className="mt-1">
-                  <div className="h-3 w-3 rounded-full bg-gradient-to-br from-cyan-500 to-cyan-600 shadow-sm"></div>
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-lg text-cyan-900 dark:text-cyan-100 mb-1">
-                    Exclusive Owner Tools
-                  </h3>
-                  <p className="text-muted-foreground leading-relaxed">
-                    Special tools and features available only to platform owners
-                  </p>
-                </div>
+              <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-gradient-to-r from-cyan-50 to-transparent dark:from-cyan-950/20 border-l-2 border-cyan-400">
+                <Crown className="h-4 w-4 text-cyan-600 dark:text-cyan-400 flex-shrink-0" />
+                <span className="text-sm font-medium text-foreground">Exclusive Owner Tools</span>
               </div>
             </div>
 
             {/* Security Notice */}
-            <div className="mt-8 p-5 rounded-xl bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-900/40 dark:to-orange-900/40 border-l-4 border-amber-500 shadow-inner">
-              <div className="flex items-start gap-3">
-                <Shield className="h-5 w-5 text-amber-700 dark:text-amber-300 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="text-sm font-bold text-amber-900 dark:text-amber-100 mb-1">
-                    Security Notice
-                  </p>
-                  <p className="text-sm text-amber-800 dark:text-amber-200 leading-relaxed">
-                    Owner privileges grant unrestricted access to all system functions. Use responsibly.
-                  </p>
-                </div>
+            <div className="mt-6 p-3 rounded-lg bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-900/40 dark:to-orange-900/40 border-l-4 border-amber-500">
+              <div className="flex items-center gap-2">
+                <Shield className="h-4 w-4 text-amber-700 dark:text-amber-300 flex-shrink-0" />
+                <p className="text-xs text-amber-800 dark:text-amber-200">
+                  <strong className="font-semibold">Security Notice:</strong> Owner privileges grant unrestricted access to all system functions. Use responsibly.
+                </p>
               </div>
             </div>
           </CardContent>
