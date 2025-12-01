@@ -561,6 +561,109 @@ export default function Admin() {
           </motion.div>
         </div>
 
+        {/* Order Status Cards */}
+        <div className="grid gap-6 md:grid-cols-4 mb-8">
+          {(() => {
+            const statusCounts = orders.reduce((acc: any, order) => {
+              acc[order.status] = (acc[order.status] || 0) + 1;
+              return acc;
+            }, {});
+
+            const pendingOrders = statusCounts.pending || 0;
+            const shippedOrders = statusCounts.shipped || 0;
+            const completedOrders = statusCounts.completed || 0;
+            const cancelledOrders = statusCounts.cancelled || 0;
+
+            return (
+              <>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                >
+                  <Card className="border-l-4 border-l-yellow-500 hover:shadow-lg transition-shadow bg-gradient-to-br from-yellow-50 to-background dark:from-yellow-950/20 dark:to-background">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                      <CardTitle className="text-sm font-medium text-muted-foreground">
+                        Pending Orders
+                      </CardTitle>
+                      <div className="h-10 w-10 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center">
+                        <ShoppingCart className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold text-yellow-600 dark:text-yellow-400">{pendingOrders}</div>
+                      <p className="text-xs text-muted-foreground mt-1">Awaiting processing</p>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6 }}
+                >
+                  <Card className="border-l-4 border-l-cyan-500 hover:shadow-lg transition-shadow bg-gradient-to-br from-cyan-50 to-background dark:from-cyan-950/20 dark:to-background">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                      <CardTitle className="text-sm font-medium text-muted-foreground">
+                        Shipped Orders
+                      </CardTitle>
+                      <div className="h-10 w-10 rounded-full bg-cyan-100 dark:bg-cyan-900/30 flex items-center justify-center">
+                        <Package className="h-5 w-5 text-cyan-600 dark:text-cyan-400" />
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold text-cyan-600 dark:text-cyan-400">{shippedOrders}</div>
+                      <p className="text-xs text-muted-foreground mt-1">In transit</p>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.7 }}
+                >
+                  <Card className="border-l-4 border-l-green-500 hover:shadow-lg transition-shadow bg-gradient-to-br from-green-50 to-background dark:from-green-950/20 dark:to-background">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                      <CardTitle className="text-sm font-medium text-muted-foreground">
+                        Completed Orders
+                      </CardTitle>
+                      <div className="h-10 w-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                        <ShoppingCart className="h-5 w-5 text-green-600 dark:text-green-400" />
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold text-green-600 dark:text-green-400">{completedOrders}</div>
+                      <p className="text-xs text-muted-foreground mt-1">Successfully delivered</p>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.8 }}
+                >
+                  <Card className="border-l-4 border-l-red-500 hover:shadow-lg transition-shadow bg-gradient-to-br from-red-50 to-background dark:from-red-950/20 dark:to-background">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                      <CardTitle className="text-sm font-medium text-muted-foreground">
+                        Cancelled Orders
+                      </CardTitle>
+                      <div className="h-10 w-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                        <ShoppingCart className="h-5 w-5 text-red-600 dark:text-red-400" />
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold text-red-600 dark:text-red-400">{cancelledOrders}</div>
+                      <p className="text-xs text-muted-foreground mt-1">Cancelled</p>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              </>
+            );
+          })()}
+        </div>
+
         {/* Main Content */}
         <Tabs defaultValue="products" className="space-y-6">
           <TabsList className="grid w-full max-w-md grid-cols-3 h-12 bg-muted/50">

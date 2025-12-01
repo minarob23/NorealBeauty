@@ -172,67 +172,98 @@ export default function AdminUsers() {
 
   return (
     <div className="container mx-auto py-8 px-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>User Management</CardTitle>
-          <CardDescription>
-            Manage all registered users in the system
-          </CardDescription>
+      <Card className="border-t-4 border-t-purple-500 shadow-xl bg-gradient-to-br from-purple-50/30 to-background dark:from-purple-950/10 dark:to-background">
+        <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border-b">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-2xl flex items-center gap-2">
+                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                  <Search className="h-5 w-5 text-white" />
+                </div>
+                User Management
+              </CardTitle>
+              <CardDescription className="mt-2">
+                Manage all registered users in the system • {filteredUsers.length} total users
+              </CardDescription>
+            </div>
+          </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           <div className="mb-6">
-            <div className="relative">
+            <div className="relative max-w-md">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search by email or name..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
+                className="pl-10 border-purple-200 focus:border-purple-400 focus:ring-purple-400"
               />
             </div>
           </div>
 
           {loading ? (
-            <div className="text-center py-8">Loading users...</div>
+            <div className="text-center py-12">
+              <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-purple-600 border-r-transparent"></div>
+              <p className="mt-4 text-muted-foreground">Loading users...</p>
+            </div>
           ) : (
-            <div className="rounded-md border">
+            <div className="rounded-lg border border-purple-100 overflow-hidden shadow-md">
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Provider</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead>Logins</TableHead>
-                    <TableHead>Last Login</TableHead>
-                    <TableHead>Actions</TableHead>
+                  <TableRow className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 hover:from-purple-50 hover:to-pink-50">
+                    <TableHead className="font-semibold text-foreground">Email</TableHead>
+                    <TableHead className="font-semibold text-foreground">Name</TableHead>
+                    <TableHead className="font-semibold text-foreground">Provider</TableHead>
+                    <TableHead className="font-semibold text-foreground">Role</TableHead>
+                    <TableHead className="font-semibold text-foreground">Logins</TableHead>
+                    <TableHead className="font-semibold text-foreground">Last Login</TableHead>
+                    <TableHead className="font-semibold text-foreground text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredUsers.map((user) => (
-                    <TableRow key={user.id}>
-                      <TableCell className="font-medium">{user.email}</TableCell>
-                      <TableCell>
+                  {filteredUsers.map((user, index) => (
+                    <TableRow 
+                      key={user.id} 
+                      className="hover:bg-purple-50/50 dark:hover:bg-purple-950/10 transition-colors border-b border-purple-50"
+                    >
+                      <TableCell className="font-medium">
+                        <div className="flex items-center gap-2">
+                          <div className="h-8 w-8 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white text-sm font-semibold">
+                            {user.email.charAt(0).toUpperCase()}
+                          </div>
+                          {user.email}
+                        </div>
+                      </TableCell>
+                      <TableCell className="font-medium">
                         {user.firstName} {user.lastName}
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline">{user.authProvider}</Badge>
+                        <Badge variant="outline" className="border-purple-200">{user.authProvider}</Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={user.isAdmin ? "default" : "secondary"}>
+                        <Badge 
+                          variant={user.isAdmin ? "default" : "secondary"}
+                          className={user.isAdmin ? "bg-gradient-to-r from-purple-600 to-pink-600" : ""}
+                        >
                           {user.isAdmin ? "Admin" : "User"}
                         </Badge>
                       </TableCell>
-                      <TableCell>{user.loginCount || 0}</TableCell>
+                      <TableCell>
+                        <span className="inline-flex items-center gap-1">
+                          <span className="font-semibold">{user.loginCount || 0}</span>
+                          <span className="text-xs text-muted-foreground">times</span>
+                        </span>
+                      </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {formatDate(user.lastLoginAt)}
                       </TableCell>
                       <TableCell>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 justify-end">
                           <Button
                             variant="outline"
                             size="icon"
                             onClick={() => setEditUser(user)}
+                            className="hover:bg-purple-50 hover:border-purple-300 hover:text-purple-600"
                           >
                             <Pencil className="h-4 w-4" />
                           </Button>
@@ -240,6 +271,7 @@ export default function AdminUsers() {
                             variant="outline"
                             size="icon"
                             onClick={() => setDeleteUserId(user.id)}
+                            className="hover:bg-red-50 hover:border-red-300 hover:text-red-600"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>

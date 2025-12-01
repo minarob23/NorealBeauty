@@ -331,48 +331,74 @@ export default function OwnerAdminManagement() {
         </div>
 
         {/* Admins List */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5" />
+        <Card className="border-t-4 border-t-purple-500 shadow-xl bg-gradient-to-br from-purple-50/30 to-background dark:from-purple-950/10 dark:to-background">
+          <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border-b">
+            <CardTitle className="text-2xl flex items-center gap-2">
+              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                <Shield className="h-5 w-5 text-white" />
+              </div>
               Current Administrators
             </CardTitle>
-            <CardDescription>
-              All admin accounts with their roles and status
+            <CardDescription className="mt-2">
+              All admin accounts with their roles and status • {admins.length} active admins
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
             {admins.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                No admin accounts yet. Create your first admin above.
+              <div className="text-center py-12 border-2 border-dashed border-purple-200 rounded-lg">
+                <Shield className="h-12 w-12 mx-auto mb-4 text-purple-300" />
+                <p className="text-muted-foreground font-medium">No admin accounts yet</p>
+                <p className="text-sm text-muted-foreground mt-1">Create your first admin using the button above</p>
               </div>
             ) : (
-              <div className="space-y-4">
-                {admins.map((admin) => (
+              <div className="grid gap-4 md:grid-cols-2">
+                {admins.map((admin, index) => (
                   <div
                     key={admin.id}
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
+                    className="relative group flex items-start gap-4 p-5 border-2 border-purple-100 rounded-xl hover:border-purple-300 hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-white to-purple-50/20 dark:from-background dark:to-purple-950/10"
                   >
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-1">
-                        <h3 className="font-semibold">
-                          {admin.firstName} {admin.lastName}
-                        </h3>
-                        {getRoleBadge(admin.adminRole)}
+                    <div className="flex-shrink-0">
+                      <div className="h-14 w-14 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-xl font-bold shadow-md">
+                        {admin.firstName?.charAt(0)}{admin.lastName?.charAt(0)}
                       </div>
-                      <p className="text-sm text-muted-foreground">
-                        {admin.email}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className="font-bold text-lg">
+                            {admin.firstName} {admin.lastName}
+                          </h3>
+                          {getRoleBadge(admin.adminRole)}
+                        </div>
+                      </div>
+                      <p className="text-sm text-muted-foreground flex items-center gap-1 mb-1">
+                        <span className="font-medium">✉</span> {admin.email}
                       </p>
                       {admin.adminName && (
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Display: {admin.adminName}
+                        <p className="text-xs bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 px-2 py-1 rounded-md inline-block mb-1">
+                          📋 {admin.adminName}
                         </p>
                       )}
-                      <p className="text-xs text-muted-foreground mt-1">
+                      <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+                        <span className="font-medium">🕒</span>
                         Last login:{" "}
                         {admin.lastLoginAt
-                          ? new Date(admin.lastLoginAt).toLocaleDateString()
-                          : "Never"}
+                          ? new Date(admin.lastLoginAt).toLocaleDateString('en-US', { 
+                              month: 'short', 
+                              day: 'numeric', 
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })
+                          : "Never logged in"}
+                      </p>
+                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        <span className="font-medium">📅</span>
+                        Created: {new Date(admin.createdAt).toLocaleDateString('en-US', { 
+                          month: 'short', 
+                          day: 'numeric', 
+                          year: 'numeric' 
+                        })}
                       </p>
                     </div>
 
@@ -380,9 +406,9 @@ export default function OwnerAdminManagement() {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleDeleteAdmin(admin.id, admin.email)}
-                      className="text-destructive hover:text-destructive"
+                      className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity text-red-600 hover:text-red-700 hover:bg-red-50"
                     >
-                      <X className="h-4 w-4" />
+                      <X className="h-5 w-5" />
                     </Button>
                   </div>
                 ))}

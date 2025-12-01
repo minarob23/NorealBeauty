@@ -69,18 +69,27 @@ export default function OwnerDashboard() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <div className="flex items-center gap-3 mb-2">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-pink-500">
-              <Crown className="h-6 w-6 text-white" />
+          <div className="flex items-center justify-between gap-3 mb-2">
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-pink-500">
+                <Crown className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h1 className="font-serif text-4xl font-light tracking-wide bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                  Owner Dashboard
+                </h1>
+                <p className="text-muted-foreground">
+                  Welcome back, {(user as any)?.ownerName || (user as any)?.firstName}
+                </p>
+              </div>
             </div>
-            <div>
-              <h1 className="font-serif text-4xl font-light tracking-wide bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                Owner Dashboard
-              </h1>
-              <p className="text-muted-foreground">
-                Welcome back, {(user as any)?.ownerName || (user as any)?.firstName}
-              </p>
-            </div>
+            <Button
+              variant="outline"
+              onClick={() => window.location.href = "/api/logout"}
+              className="hover:bg-red-50 hover:border-red-300 hover:text-red-600"
+            >
+              Sign Out
+            </Button>
           </div>
         </motion.div>
 
@@ -158,64 +167,95 @@ export default function OwnerDashboard() {
         </div>
 
         {/* Owner Privileges Info */}
-        <Card className="border-purple-200 bg-gradient-to-br from-purple-50 to-pink-50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Crown className="h-5 w-5 text-purple-600" />
-              Owner Privileges
+        <Card className="border-t-4 border-t-purple-500 shadow-xl bg-gradient-to-br from-purple-50 via-pink-50 to-purple-50 dark:from-purple-950/30 dark:via-pink-950/30 dark:to-purple-950/30">
+          <CardHeader className="border-b bg-gradient-to-r from-purple-100/50 to-pink-100/50 dark:from-purple-950/50 dark:to-pink-950/50">
+            <CardTitle className="text-2xl flex items-center gap-2">
+              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                <Crown className="h-5 w-5 text-white" />
+              </div>
+              Owner Privileges & Capabilities
             </CardTitle>
+            <CardDescription className="mt-2">
+              Your exclusive owner-level permissions and system access rights
+            </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="grid gap-3 md:grid-cols-2">
-              <div className="flex items-start gap-2">
-                <div className="mt-1 h-2 w-2 rounded-full bg-purple-600" />
+          <CardContent className="pt-6">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <div className="flex items-start gap-3 p-4 rounded-lg bg-gradient-to-br from-purple-100/50 to-white dark:from-purple-950/20 dark:to-background border border-purple-200">
+                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+                  <Shield className="h-5 w-5 text-white" />
+                </div>
                 <div>
-                  <p className="font-medium">Full System Access</p>
-                  <p className="text-sm text-muted-foreground">
-                    Complete control over all platform features
+                  <p className="font-semibold text-purple-900 dark:text-purple-100">Full System Access</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Complete control over all platform features and settings
                   </p>
                 </div>
               </div>
-              <div className="flex items-start gap-2">
-                <div className="mt-1 h-2 w-2 rounded-full bg-purple-600" />
+              <div className="flex items-start gap-3 p-4 rounded-lg bg-gradient-to-br from-blue-100/50 to-white dark:from-blue-950/20 dark:to-background border border-blue-200">
+                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center flex-shrink-0">
+                  <Users className="h-5 w-5 text-white" />
+                </div>
                 <div>
-                  <p className="font-medium">Admin Management</p>
-                  <p className="text-sm text-muted-foreground">
-                    Create, edit, and remove admin accounts
+                  <p className="font-semibold text-blue-900 dark:text-blue-100">Admin Management</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Create, edit, and remove admin accounts with role assignment
                   </p>
                 </div>
               </div>
-              <div className="flex items-start gap-2">
-                <div className="mt-1 h-2 w-2 rounded-full bg-purple-600" />
+              <div className="flex items-start gap-3 p-4 rounded-lg bg-gradient-to-br from-green-100/50 to-white dark:from-green-950/20 dark:to-background border border-green-200">
+                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center flex-shrink-0">
+                  <Activity className="h-5 w-5 text-white" />
+                </div>
                 <div>
-                  <p className="font-medium">Activity Monitoring</p>
-                  <p className="text-sm text-muted-foreground">
-                    Track all admin and owner actions
+                  <p className="font-semibold text-green-900 dark:text-green-100">Activity Monitoring</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Track all admin and owner actions in real-time
                   </p>
                 </div>
               </div>
-              <div className="flex items-start gap-2">
-                <div className="mt-1 h-2 w-2 rounded-full bg-purple-600" />
+              <div className="flex items-start gap-3 p-4 rounded-lg bg-gradient-to-br from-orange-100/50 to-white dark:from-orange-950/20 dark:to-background border border-orange-200">
+                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center flex-shrink-0">
+                  <Settings className="h-5 w-5 text-white" />
+                </div>
                 <div>
-                  <p className="font-medium">System Configuration</p>
-                  <p className="text-sm text-muted-foreground">
-                    Modify critical system settings
+                  <p className="font-semibold text-orange-900 dark:text-orange-100">System Configuration</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Modify critical system settings and configurations
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 p-4 rounded-lg bg-gradient-to-br from-pink-100/50 to-white dark:from-pink-950/20 dark:to-background border border-pink-200">
+                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-pink-500 to-pink-600 flex items-center justify-center flex-shrink-0">
+                  <BarChart3 className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <p className="font-semibold text-pink-900 dark:text-pink-100">Advanced Analytics</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Access comprehensive analytics and business insights
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 p-4 rounded-lg bg-gradient-to-br from-cyan-100/50 to-white dark:from-cyan-950/20 dark:to-background border border-cyan-200">
+                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center flex-shrink-0">
+                  <Crown className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <p className="font-semibold text-cyan-900 dark:text-cyan-100">Exclusive Owner Tools</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Special tools and features available only to platform owners
                   </p>
                 </div>
               </div>
             </div>
+            <div className="mt-6 p-4 rounded-lg bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-950/40 dark:to-pink-950/40 border-2 border-purple-300">
+              <p className="text-sm font-medium text-purple-900 dark:text-purple-100 flex items-center gap-2">
+                <Shield className="h-4 w-4" />
+                <strong>Security Notice:</strong> Owner privileges grant unrestricted access to all system functions. Use responsibly.
+              </p>
+            </div>
           </CardContent>
         </Card>
-
-        {/* Quick Actions */}
-        <div className="mt-6 flex gap-4">
-          <Button
-            variant="outline"
-            onClick={() => window.location.href = "/api/logout"}
-          >
-            Sign Out
-          </Button>
-        </div>
       </div>
     </motion.div>
   );

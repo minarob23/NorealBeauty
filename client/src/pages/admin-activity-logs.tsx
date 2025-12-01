@@ -109,60 +109,84 @@ export default function AdminActivityLogs() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">Admin Activity Logs</h1>
+        <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+          Admin Activity Logs
+        </h1>
         <p className="text-muted-foreground">
           Track all admin actions and monitor who's managing the platform
         </p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Activity className="h-5 w-5" />
-            Recent Activities
-          </CardTitle>
-          <CardDescription>
-            Showing the last 100 admin actions
-          </CardDescription>
+      <Card className="border-t-4 border-t-purple-500 shadow-xl bg-gradient-to-br from-purple-50/30 to-background dark:from-purple-950/10 dark:to-background">
+        <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border-b">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-2xl flex items-center gap-2">
+                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                  <Activity className="h-5 w-5 text-white" />
+                </div>
+                Recent Activities
+              </CardTitle>
+              <CardDescription className="mt-2">
+                Showing the last 100 admin actions • {activities.length} total activities
+              </CardDescription>
+            </div>
+          </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           {isLoading ? (
-            <div className="text-center py-8">Loading activity logs...</div>
+            <div className="text-center py-12">
+              <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-purple-600 border-r-transparent"></div>
+              <p className="mt-4 text-muted-foreground">Loading activity logs...</p>
+            </div>
           ) : activities.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              No activities yet
+            <div className="text-center py-12 border-2 border-dashed border-purple-200 rounded-lg">
+              <Activity className="h-12 w-12 mx-auto mb-4 text-purple-300" />
+              <p className="text-muted-foreground font-medium">No activities yet</p>
+              <p className="text-sm text-muted-foreground mt-1">Admin actions will appear here</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="rounded-lg border border-purple-100 overflow-hidden shadow-md">
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead>Time</TableHead>
-                    <TableHead>Admin</TableHead>
-                    <TableHead>Action</TableHead>
-                    <TableHead>Target</TableHead>
-                    <TableHead>Details</TableHead>
-                    <TableHead>IP Address</TableHead>
+                  <TableRow className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 hover:from-purple-50 hover:to-pink-50">
+                    <TableHead className="font-semibold text-foreground">Time</TableHead>
+                    <TableHead className="font-semibold text-foreground">Admin</TableHead>
+                    <TableHead className="font-semibold text-foreground">Action</TableHead>
+                    <TableHead className="font-semibold text-foreground">Target</TableHead>
+                    <TableHead className="font-semibold text-foreground">Details</TableHead>
+                    <TableHead className="font-semibold text-foreground">IP Address</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {activities.map((activity) => {
+                  {activities.map((activity, index) => {
                     const details = parseDetails(activity.details);
                     return (
-                      <TableRow key={activity.id}>
+                      <TableRow 
+                        key={activity.id}
+                        className="hover:bg-purple-50/50 dark:hover:bg-purple-950/10 transition-colors border-b border-purple-50"
+                      >
                         <TableCell className="whitespace-nowrap">
-                          <div className="text-sm">
-                            {formatDate(activity.createdAt)}
+                          <div className="flex items-center gap-2">
+                            <div className="h-2 w-2 rounded-full bg-gradient-to-br from-purple-400 to-pink-400"></div>
+                            <div className="text-sm font-medium">
+                              {formatDate(activity.createdAt)}
+                            </div>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="flex flex-col">
-                            <span className="font-medium">
-                              {activity.adminName || "Unknown Admin"}
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                              {activity.adminEmail}
-                            </span>
+                          <div className="flex items-center gap-2">
+                            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white text-sm font-semibold">
+                              {activity.adminName?.charAt(0).toUpperCase() || activity.adminEmail?.charAt(0).toUpperCase() || '?'}
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="font-semibold">
+                                {activity.adminName || "Unknown Admin"}
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                {activity.adminEmail}
+                              </span>
+                            </div>
                           </div>
                         </TableCell>
                         <TableCell>
@@ -171,10 +195,10 @@ export default function AdminActivityLogs() {
                         <TableCell>
                           {activity.targetType ? (
                             <div className="flex flex-col">
-                              <span className="text-sm capitalize">
+                              <Badge variant="outline" className="w-fit capitalize border-purple-200">
                                 {activity.targetType}
-                              </span>
-                              <span className="text-xs text-muted-foreground font-mono">
+                              </Badge>
+                              <span className="text-xs text-muted-foreground font-mono mt-1">
                                 {activity.targetId?.substring(0, 8)}...
                               </span>
                             </div>
@@ -184,26 +208,26 @@ export default function AdminActivityLogs() {
                         </TableCell>
                         <TableCell>
                           {details ? (
-                            <div className="text-xs">
+                            <div className="text-xs space-y-1">
                               {details.role && (
-                                <Badge variant="outline" className="mr-1">
+                                <Badge variant="outline" className="mr-1 border-purple-200">
                                   {details.role}
                                 </Badge>
                               )}
                               {details.targetEmail && (
-                                <span className="text-muted-foreground">
-                                  {details.targetEmail}
-                                </span>
+                                <div className="text-muted-foreground">
+                                  📧 {details.targetEmail}
+                                </div>
                               )}
                               {details.deletedEmail && (
-                                <span className="text-destructive">
-                                  Deleted: {details.deletedEmail}
-                                </span>
+                                <div className="text-destructive font-medium">
+                                  🗑️ Deleted: {details.deletedEmail}
+                                </div>
                               )}
                               {details.updates && (
-                                <span className="text-muted-foreground">
-                                  Updated: {Object.keys(details.updates).join(", ")}
-                                </span>
+                                <div className="text-muted-foreground">
+                                  ✏️ Updated: {Object.keys(details.updates).join(", ")}
+                                </div>
                               )}
                             </div>
                           ) : (
@@ -211,9 +235,12 @@ export default function AdminActivityLogs() {
                           )}
                         </TableCell>
                         <TableCell>
-                          <span className="text-xs font-mono text-muted-foreground">
-                            {activity.ipAddress || "—"}
-                          </span>
+                          <div className="flex items-center gap-1">
+                            <span className="text-xs">🌐</span>
+                            <span className="text-xs font-mono text-muted-foreground">
+                              {activity.ipAddress || "—"}
+                            </span>
+                          </div>
                         </TableCell>
                       </TableRow>
                     );
