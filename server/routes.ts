@@ -574,11 +574,11 @@ export async function registerRoutes(
         if (trackingNumber !== undefined && trackingNumber !== null) {
           updateData.trackingNumber = trackingNumber;
         }
-        if (shippedAt) {
-          updateData.shippedAt = new Date(shippedAt);
+        if (shippedAt !== undefined) {
+          updateData.shippedAt = shippedAt ? new Date(shippedAt) : null;
         }
-        if (deliveredAt) {
-          updateData.deliveredAt = new Date(deliveredAt);
+        if (deliveredAt !== undefined) {
+          updateData.deliveredAt = deliveredAt ? new Date(deliveredAt) : null;
         }
         
         await db.update(orders).set(updateData).where(eq(orders.id, req.params.id));
