@@ -41,9 +41,7 @@ export const translations = {
       writeReview: "Write a Review",
       description: "Description",
       ingredients: "Ingredients",
-      howToUse: "How to Use",
-      subscribe: "Subscribe & Save",
-      subscribeDiscount: "Save 15% with subscription"
+      howToUse: "How to Use"
     },
     cart: {
       title: "Shopping Cart",
@@ -60,17 +58,6 @@ export const translations = {
       empty: "Your wishlist is empty",
       moveToCart: "Move to Cart",
       share: "Share Wishlist"
-    },
-    subscription: {
-      title: "Subscribe & Save",
-      frequency: "Delivery Frequency",
-      weekly: "Weekly",
-      "bi-weekly": "Every 2 Weeks",
-      monthly: "Monthly",
-      "bi-monthly": "Every 2 Months",
-      nextDelivery: "Next Delivery",
-      cancel: "Cancel Subscription",
-      manage: "Manage Subscription"
     },
     review: {
       rating: "Rating",
@@ -161,9 +148,7 @@ export const translations = {
       writeReview: "Écrire un Avis",
       description: "Description",
       ingredients: "Ingrédients",
-      howToUse: "Mode d'Emploi",
-      subscribe: "S'abonner et Économiser",
-      subscribeDiscount: "Économisez 15% avec l'abonnement"
+      howToUse: "Mode d'Emploi"
     },
     cart: {
       title: "Panier",
@@ -180,17 +165,6 @@ export const translations = {
       empty: "Votre liste de favoris est vide",
       moveToCart: "Ajouter au Panier",
       share: "Partager"
-    },
-    subscription: {
-      title: "S'abonner et Économiser",
-      frequency: "Fréquence de Livraison",
-      weekly: "Hebdomadaire",
-      "bi-weekly": "Toutes les 2 Semaines",
-      monthly: "Mensuel",
-      "bi-monthly": "Tous les 2 Mois",
-      nextDelivery: "Prochaine Livraison",
-      cancel: "Annuler l'Abonnement",
-      manage: "Gérer l'Abonnement"
     },
     review: {
       rating: "Note",
@@ -281,9 +255,7 @@ export const translations = {
       writeReview: "Escribir Reseña",
       description: "Descripción",
       ingredients: "Ingredientes",
-      howToUse: "Modo de Uso",
-      subscribe: "Suscríbete y Ahorra",
-      subscribeDiscount: "Ahorra 15% con suscripción"
+      howToUse: "Modo de Uso"
     },
     cart: {
       title: "Carrito de Compras",
@@ -300,17 +272,6 @@ export const translations = {
       empty: "Tu lista de favoritos está vacía",
       moveToCart: "Mover al Carrito",
       share: "Compartir"
-    },
-    subscription: {
-      title: "Suscríbete y Ahorra",
-      frequency: "Frecuencia de Entrega",
-      weekly: "Semanal",
-      "bi-weekly": "Cada 2 Semanas",
-      monthly: "Mensual",
-      "bi-monthly": "Cada 2 Meses",
-      nextDelivery: "Próxima Entrega",
-      cancel: "Cancelar Suscripción",
-      manage: "Gestionar Suscripción"
     },
     review: {
       rating: "Calificación",

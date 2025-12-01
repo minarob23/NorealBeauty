@@ -45,9 +45,7 @@ export const useAppStore = create<AppState>()(
       cartItems: [],
       addToCart: (item) => {
         const existingItem = get().cartItems.find(
-          (i) => i.productId === item.productId && 
-                 i.isSubscription === item.isSubscription &&
-                 i.subscriptionFrequency === item.subscriptionFrequency
+          (i) => i.productId === item.productId
         );
         if (existingItem) {
           set({

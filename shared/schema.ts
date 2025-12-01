@@ -25,8 +25,6 @@ export const categories = [
 
 export const skinTypes = ["all", "dry", "oily", "combination", "sensitive"] as const;
 
-export const subscriptionFrequencies = ["weekly", "bi-weekly", "monthly", "bi-monthly"] as const;
-
 export const languageCodes = ["en", "fr", "es"] as const;
 export type Language = typeof languageCodes[number];
 
@@ -123,6 +121,9 @@ export const orders = pgTable("orders", {
   tax: decimal("tax", { precision: 10, scale: 2 }).notNull().default("0"),
   total: decimal("total", { precision: 10, scale: 2 }).notNull(),
   shippingAddressId: varchar("shipping_address_id"),
+  trackingNumber: varchar("tracking_number"),
+  shippedAt: timestamp("shipped_at"),
+  deliveredAt: timestamp("delivered_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -138,8 +139,6 @@ export const orderItems = pgTable("order_items", {
   productName: varchar("product_name").notNull(),
   quantity: integer("quantity").notNull(),
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
-  isSubscription: boolean("is_subscription").default(false),
-  subscriptionFrequency: varchar("subscription_frequency"),
 });
 
 export type OrderItem = typeof orderItems.$inferSelect;
@@ -224,19 +223,6 @@ export const wishlistItemSchema = z.object({
 });
 
 export type WishlistItem = z.infer<typeof wishlistItemSchema>;
-
-export const subscriptionSchema = z.object({
-  id: z.string(),
-  productId: z.string(),
-  frequency: z.enum(subscriptionFrequencies),
-  nextDelivery: z.string(),
-  isActive: z.boolean()
-});
-
-export const insertSubscriptionSchema = subscriptionSchema.omit({ id: true, nextDelivery: true });
-
-export type Subscription = z.infer<typeof subscriptionSchema>;
-export type InsertSubscription = z.infer<typeof insertSubscriptionSchema>;
 
 // Blog posts table
 export const blogPosts = pgTable("blog_posts", {

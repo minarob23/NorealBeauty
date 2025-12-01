@@ -502,6 +502,31 @@ export async function registerRoutes(
     }
   });
 
+  // Admin: Update order status with tracking info
+  app.patch('/api/admin/orders/:id', isAdmin, async (req: any, res) => {
+    try {
+      const { status, trackingNumber, shippedAt, deliveredAt } = req.body;
+      const order = await storage.updateOrderStatus(req.params.id, status);
+      
+      // Update tracking info if provided
+      if (trackingNumber || shippedAt || deliveredAt) {
+        await db.update(orders).set({
+          trackingNumber: trackingNumber || undefined,
+          shippedAt: shippedAt ? new Date(shippedAt) : undefined,
+          deliveredAt: deliveredAt ? new Date(deliveredAt) : undefined,
+          updatedAt: new Date(),
+        }).where(eq(orders.id, req.params.id));
+      }
+      
+      const updatedOrder = await storage.getOrder(req.params.id);
+      const items = await storage.getOrderItems(req.params.id);
+      res.json({ ...updatedOrder, items });
+    } catch (error) {
+      console.error("Failed to update order:", error);
+      res.status(500).json({ error: "Failed to update order" });
+    }
+  });
+
   app.get("/api/products", async (req, res) => {
     try {
       const products = await storage.getProducts();

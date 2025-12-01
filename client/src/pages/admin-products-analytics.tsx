@@ -202,6 +202,309 @@ export default function AdminProductsAnalytics() {
         </Card>
       </div>
 
+      {/* Orders Analytics Section */}
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold mb-4">Order Analytics</h2>
+      </div>
+
+      {/* Order Charts */}
+      <div className="grid gap-6 md:grid-cols-2 mb-6">
+        {/* Order Status Distribution */}
+        <Card className="border-t-4 border-t-indigo-500">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ShoppingCart className="h-5 w-5 text-indigo-500" />
+              Order Status Distribution
+            </CardTitle>
+            <CardDescription>
+              Breakdown of orders by status
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {(() => {
+              const statusDistribution = orders.reduce((acc: any, order) => {
+                const existing = acc.find(item => item.name === order.status);
+                if (existing) {
+                  existing.value += 1;
+                } else {
+                  acc.push({
+                    name: order.status.charAt(0).toUpperCase() + order.status.slice(1),
+                    value: 1
+                  });
+                }
+                return acc;
+              }, []);
+
+              return (
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={statusDistribution}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, value }) => `${name}: ${value}`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {statusDistribution.map((entry, index) => {
+                        let color = '#3b82f6';
+                        if (entry.name === 'Completed') color = '#10b981';
+                        if (entry.name === 'Pending') color = '#f59e0b';
+                        if (entry.name === 'Shipped') color = '#06b6d4';
+                        return <Cell key={`cell-${index}`} fill={color} />;
+                      })}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              );
+            })()}
+          </CardContent>
+        </Card>
+
+        {/* Daily Order Volume */}
+        <Card className="border-t-4 border-t-cyan-500">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5 text-cyan-500" />
+              Orders by Day (Last 30 Days)
+            </CardTitle>
+            <CardDescription>
+              Daily order volume trend
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {(() => {
+              const dailyOrders = {};
+              const today = new Date();
+              const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+              for (let i = 0; i < 30; i++) {
+                const date = new Date(thirtyDaysAgo.getTime() + i * 24 * 60 * 60 * 1000);
+                const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                dailyOrders[dateStr] = 0;
+              }
+
+              orders.forEach(order => {
+                const orderDate = new Date(order.createdAt);
+                if (orderDate >= thirtyDaysAgo && orderDate <= today) {
+                  const dateStr = orderDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                  dailyOrders[dateStr] = (dailyOrders[dateStr] || 0) + 1;
+                }
+              });
+
+              const dailyOrdersData = Object.entries(dailyOrders).map(([date, count]) => ({
+                date,
+                orders: count
+              }));
+
+              return (
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={dailyOrdersData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" angle={-45} textAnchor="end" height={80} />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="orders" fill="#06b6d4" name="Orders" />
+                  </BarChart>
+                </ResponsiveContainer>
+              );
+            })()}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Revenue Analysis */}
+      <div className="grid gap-6 md:grid-cols-2 mb-6">
+        {/* Revenue by Status */}
+        <Card className="border-t-4 border-t-emerald-500">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <DollarSign className="h-5 w-5 text-emerald-500" />
+              Revenue by Order Status
+            </CardTitle>
+            <CardDescription>
+              Total revenue grouped by order status
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {(() => {
+              const revenueByStatus = orders.reduce((acc: any, order) => {
+                const existing = acc.find(item => item.name === order.status);
+                const revenue = parseFloat(order.total.toString());
+                if (existing) {
+                  existing.revenue += revenue;
+                } else {
+                  acc.push({
+                    name: order.status.charAt(0).toUpperCase() + order.status.slice(1),
+                    revenue
+                  });
+                }
+                return acc;
+              }, []);
+
+              return (
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={revenueByStatus} layout="horizontal">
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis type="number" />
+                    <YAxis dataKey="name" type="category" width={100} />
+                    <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
+                    <Legend />
+                    <Bar dataKey="revenue" fill="#10b981" name="Revenue ($)">
+                      {revenueByStatus.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              );
+            })()}
+          </CardContent>
+        </Card>
+
+        {/* Average Order Value Over Time */}
+        <Card className="border-t-4 border-t-rose-500">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-rose-500" />
+              Cumulative Revenue Trend
+            </CardTitle>
+            <CardDescription>
+              Running total of revenue over time
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {(() => {
+              const cumulativeData = [];
+              let runningTotal = 0;
+              const sortedOrders = [...orders].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+              
+              sortedOrders.forEach((order, index) => {
+                runningTotal += parseFloat(order.total.toString());
+                if (index % Math.max(1, Math.floor(orders.length / 12)) === 0) {
+                  cumulativeData.push({
+                    order: `#${index + 1}`,
+                    revenue: Math.round(runningTotal),
+                    date: new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                  });
+                }
+              });
+
+              if (cumulativeData.length === 0 && orders.length > 0) {
+                cumulativeData.push({
+                  order: '#1',
+                  revenue: Math.round(runningTotal),
+                  date: new Date(orders[0].createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                });
+              }
+
+              return (
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={cumulativeData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" />
+                    <YAxis />
+                    <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
+                    <Legend />
+                    <Line
+                      type="monotone"
+                      dataKey="revenue"
+                      stroke="#f43f5e"
+                      strokeWidth={2}
+                      name="Cumulative Revenue ($)"
+                      dot={{ fill: '#f43f5e', r: 4 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              );
+            })()}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Order Statistics Cards */}
+      <div className="grid gap-6 md:grid-cols-4 mb-6">
+        {(() => {
+          const statusCounts = orders.reduce((acc: any, order) => {
+            acc[order.status] = (acc[order.status] || 0) + 1;
+            return acc;
+          }, {});
+
+          const pendingOrders = statusCounts.pending || 0;
+          const shippedOrders = statusCounts.shipped || 0;
+          const completedOrders = statusCounts.completed || 0;
+          const cancelledOrders = statusCounts.cancelled || 0;
+
+          return (
+            <>
+              <Card className="border-l-4 border-l-yellow-500">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    Pending Orders
+                  </CardTitle>
+                  <div className="h-10 w-10 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center">
+                    <ShoppingCart className="h-5 w-5 text-yellow-600" />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-yellow-600">{pendingOrders}</div>
+                  <p className="text-xs text-muted-foreground mt-1">Awaiting processing</p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-l-4 border-l-cyan-500">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    Shipped Orders
+                  </CardTitle>
+                  <div className="h-10 w-10 rounded-full bg-cyan-100 dark:bg-cyan-900/30 flex items-center justify-center">
+                    <Package className="h-5 w-5 text-cyan-600" />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-cyan-600">{shippedOrders}</div>
+                  <p className="text-xs text-muted-foreground mt-1">In transit</p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-l-4 border-l-green-500">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    Completed Orders
+                  </CardTitle>
+                  <div className="h-10 w-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                    <ShoppingCart className="h-5 w-5 text-green-600" />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-green-600">{completedOrders}</div>
+                  <p className="text-xs text-muted-foreground mt-1">Successfully delivered</p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-l-4 border-l-red-500">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    Cancelled Orders
+                  </CardTitle>
+                  <div className="h-10 w-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                    <ShoppingCart className="h-5 w-5 text-red-600" />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-red-600">{cancelledOrders}</div>
+                  <p className="text-xs text-muted-foreground mt-1">Cancelled</p>
+                </CardContent>
+              </Card>
+            </>
+          );
+        })()}
+      </div>
+
       {/* Charts Section */}
       <div className="grid gap-6 md:grid-cols-2 mb-6">
         {/* Revenue & Orders Trend */}

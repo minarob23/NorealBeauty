@@ -88,6 +88,14 @@ export default function Admin() {
   const [deleteProductId, setDeleteProductId] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [ingredientInput, setIngredientInput] = useState("");
+  const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
+  const [orderStatusDialogOpen, setOrderStatusDialogOpen] = useState(false);
+  const [orderUpdateData, setOrderUpdateData] = useState({
+    status: "pending",
+    trackingNumber: "",
+    shippedAt: "",
+    deliveredAt: "",
+  });
 
   const [formData, setFormData] = useState({
     name: "",
@@ -178,6 +186,29 @@ export default function Admin() {
     },
   });
 
+  const updateOrderMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+      const response = await fetch(`/api/admin/orders/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error("Failed to update order");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/orders"] });
+      toast({ title: "Success", description: "Order updated successfully" });
+      setOrderStatusDialogOpen(false);
+      setSelectedOrder(null);
+      setOrderUpdateData({ status: "pending", trackingNumber: "", shippedAt: "", deliveredAt: "" });
+    },
+    onError: () => {
+      toast({ variant: "destructive", title: "Error", description: "Failed to update order" });
+    },
+  });
+
   useEffect(() => {
     if (editProduct) {
       setFormData({
@@ -195,6 +226,17 @@ export default function Admin() {
       });
     }
   }, [editProduct]);
+
+  useEffect(() => {
+    if (selectedOrder) {
+      setOrderUpdateData({
+        status: selectedOrder.status || "pending",
+        trackingNumber: selectedOrder.trackingNumber || "",
+        shippedAt: selectedOrder.shippedAt ? new Date(selectedOrder.shippedAt).toISOString().slice(0, 16) : "",
+        deliveredAt: selectedOrder.deliveredAt ? new Date(selectedOrder.deliveredAt).toISOString().slice(0, 16) : "",
+      });
+    }
+  }, [selectedOrder]);
 
   const resetForm = () => {
     setFormData({
@@ -740,7 +782,15 @@ export default function Admin() {
                               </TableCell>
                               <TableCell>
                                 <div className="flex justify-end">
-                                  <Button variant="ghost" size="sm" className="hover:bg-blue-100 hover:text-blue-600 dark:hover:bg-blue-900/30">
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    className="hover:bg-blue-100 hover:text-blue-600 dark:hover:bg-blue-900/30"
+                                    onClick={() => {
+                                      setSelectedOrder(order);
+                                      setOrderStatusDialogOpen(true);
+                                    }}
+                                  >
                                     View Details
                                   </Button>
                                 </div>
@@ -1007,6 +1057,184 @@ export default function Admin() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        {/* Order Details Dialog */}
+        <Dialog open={orderStatusDialogOpen} onOpenChange={(open) => {
+          if (!open) {
+            setOrderStatusDialogOpen(false);
+            setSelectedOrder(null);
+          }
+        }}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Order Details & Status</DialogTitle>
+              <DialogDescription>
+                View and update order information
+              </DialogDescription>
+            </DialogHeader>
+            {selectedOrder && (
+              <div className="space-y-6 py-4">
+                {/* Order Header */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Order ID</p>
+                    <p className="font-mono font-semibold">{selectedOrder.id.slice(0, 12)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Order Date</p>
+                    <p className="font-semibold">
+                      {new Date(selectedOrder.createdAt).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Customer Info */}
+                <div className="border-t pt-4">
+                  <p className="font-semibold mb-2">Customer Information</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Name</p>
+                      <p>{selectedOrder.userFirstName} {selectedOrder.userLastName}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Email</p>
+                      <p className="break-all">{selectedOrder.userEmail}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Order Items */}
+                <div className="border-t pt-4">
+                  <p className="font-semibold mb-3">Order Items</p>
+                  <div className="space-y-2">
+                    {selectedOrder.items?.map((item: any, index: number) => (
+                      <div key={index} className="flex justify-between text-sm p-2 bg-muted rounded">
+                        <div>
+                          <p className="font-medium">{item.productName}</p>
+                          <p className="text-xs text-muted-foreground">Qty: {item.quantity}</p>
+                        </div>
+                        <p className="font-semibold">${parseFloat(item.price).toFixed(2)}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Order Totals */}
+                <div className="border-t pt-4 space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Subtotal</span>
+                    <span>${parseFloat(selectedOrder.subtotal).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Shipping</span>
+                    <span>${parseFloat(selectedOrder.shipping).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Tax</span>
+                    <span>${parseFloat(selectedOrder.tax).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between font-semibold border-t pt-2">
+                    <span>Total</span>
+                    <span>${parseFloat(selectedOrder.total).toFixed(2)}</span>
+                  </div>
+                </div>
+
+                {/* Status Update Section */}
+                <div className="border-t pt-4 space-y-4">
+                  <p className="font-semibold">Update Order Status</p>
+                  
+                  <div className="grid gap-2">
+                    <Label htmlFor="order-status">Status</Label>
+                    <Select 
+                      value={orderUpdateData.status} 
+                      onValueChange={(value) => setOrderUpdateData(prev => ({ ...prev, status: value }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="processing">Processing</SelectItem>
+                        <SelectItem value="shipped">Shipped</SelectItem>
+                        <SelectItem value="delivered">Delivered</SelectItem>
+                        <SelectItem value="cancelled">Cancelled</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="grid gap-2">
+                    <Label htmlFor="tracking-number">Tracking Number</Label>
+                    <Input
+                      id="tracking-number"
+                      value={orderUpdateData.trackingNumber}
+                      onChange={(e) => setOrderUpdateData(prev => ({ ...prev, trackingNumber: e.target.value }))}
+                      placeholder="e.g., 1Z999AA10123456784"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="grid gap-2">
+                      <Label htmlFor="shipped-at">Shipped Date</Label>
+                      <Input
+                        id="shipped-at"
+                        type="datetime-local"
+                        value={orderUpdateData.shippedAt}
+                        onChange={(e) => setOrderUpdateData(prev => ({ ...prev, shippedAt: e.target.value }))}
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="delivered-at">Delivered Date</Label>
+                      <Input
+                        id="delivered-at"
+                        type="datetime-local"
+                        value={orderUpdateData.deliveredAt}
+                        onChange={(e) => setOrderUpdateData(prev => ({ ...prev, deliveredAt: e.target.value }))}
+                      />
+                    </div>
+                  </div>
+
+                  {selectedOrder.trackingNumber && (
+                    <div className="p-3 bg-blue-50 dark:bg-blue-950/20 rounded text-sm">
+                      <p className="font-semibold">Current Tracking Number:</p>
+                      <p className="font-mono">{selectedOrder.trackingNumber}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+            <DialogFooter>
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setOrderStatusDialogOpen(false);
+                  setSelectedOrder(null);
+                }}
+              >
+                Close
+              </Button>
+              <Button
+                onClick={() => {
+                  if (selectedOrder) {
+                    updateOrderMutation.mutate({
+                      id: selectedOrder.id,
+                      data: orderUpdateData
+                    });
+                  }
+                }}
+                disabled={updateOrderMutation.isPending}
+                className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+              >
+                {updateOrderMutation.isPending ? "Updating..." : "Update Order"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </motion.div>
   );

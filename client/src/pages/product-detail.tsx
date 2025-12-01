@@ -7,7 +7,6 @@ import {
   Heart,
   Minus,
   Plus,
-  Repeat,
   ShoppingBag,
   Star,
   Check,
@@ -19,7 +18,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ProductCard, getProductImage } from "@/components/product-card";
 import { ReviewsSection } from "@/components/reviews-section";
-import { SubscriptionModal } from "@/components/subscription-modal";
 import { SocialShare } from "@/components/social-share";
 import { Footer } from "@/components/footer";
 import { useAppStore } from "@/lib/store";
@@ -43,7 +41,6 @@ export default function ProductDetail() {
 
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
-  const [subscriptionOpen, setSubscriptionOpen] = useState(false);
 
   const { data: product, isLoading: productLoading } = useQuery<Product>({
     queryKey: ["/api/products", id],
@@ -300,15 +297,6 @@ export default function ProductDetail() {
             <div className="flex gap-2">
               <Button
                 variant="outline"
-                className="flex-1"
-                onClick={() => setSubscriptionOpen(true)}
-                data-testid="button-subscribe"
-              >
-                <Repeat className="mr-2 h-4 w-4" />
-                {t.product.subscribe}
-              </Button>
-              <Button
-                variant="outline"
                 size="icon"
                 onClick={handleWishlistToggle}
                 className={inWishlist ? "text-red-500" : ""}
@@ -417,13 +405,6 @@ export default function ProductDetail() {
           </div>
         )}
       </div>
-
-      <SubscriptionModal
-        product={product}
-        open={subscriptionOpen}
-        onOpenChange={setSubscriptionOpen}
-        imageIndex={productIndex}
-      />
 
       <Footer />
     </motion.div>
