@@ -1,0 +1,186 @@
+const functions = require("firebase-functions");
+const express = require("express");
+const { createServer } = require("http");
+
+// Load environment variables
+require("dotenv").config();
+
+// Import the compiled server bundle
+// We'll require the individual modules since they're copied during build
+const { registerRoutes } = require("./routes");
+const { storage } = require("./storage");
+
+const app = express();
+const httpServer = createServer(app);
+
+app.use(
+  express.json({
+    verify: (req, _res, buf) => {
+      req.rawBody = buf;
+    },
+  }),
+);
+
+app.use(express.urlencoded({ extended: false }));
+
+function log(message, source = "express") {
+  const formattedTime = new Date().toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  });
+
+  console.log(`${formattedTime} [${source}] ${message}`);
+}
+
+app.use((req, res, next) => {
+  const start = Date.now();
+  const path = req.path;
+  let capturedJsonResponse = undefined;
+
+  const originalResJson = res.json;
+  res.json = function (bodyJson, ...args) {
+    capturedJsonResponse = bodyJson;
+    return originalResJson.apply(res, [bodyJson, ...args]);
+  };
+
+  res.on("finish", () => {
+    const duration = Date.now() - start;
+    if (path.startsWith("/api")) {
+      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
+      if (capturedJsonResponse) {
+        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
+      }
+
+      log(logLine);
+    }
+  });
+
+  next();
+});
+
+// Health check endpoint
+app.get("/_health", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
+// Auto-seed blog posts if none exist
+async function ensureBlogPosts() {
+  try {
+    const existingPosts = await storage.getAllBlogPosts();
+    if (existingPosts.length === 0) {
+      log("No blog posts found. Auto-seeding sample posts...");
+      
+      const samplePosts = [
+        {
+          title: "The Ultimate Guide to Building a Skincare Routine",
+          slug: "ultimate-guide-skincare-routine",
+          excerpt: "Discover the essential steps to create a personalized skincare routine that works for your unique skin type and concerns.",
+          content: `Building an effective skincare routine doesn't have to be complicated. The key is understanding your skin type and choosing products that address your specific concerns.
+
+**Step 1: Cleanse**
+Start with a gentle cleanser that removes dirt and makeup without stripping your skin's natural oils.
+
+**Step 2: Tone**
+Toners help balance your skin's pH and prepare it for the next steps.
+
+**Step 3: Treat**
+Apply serums targeting your specific concerns like fine lines, dark spots, or hydration.
+
+**Step 4: Moisturize**
+Lock in all that goodness with a moisturizer suited to your skin type.
+
+**Step 5: Protect**
+Never skip sunscreen during the day. UV protection is the most effective anti-aging step you can take.`,
+          authorId: "system",
+          authorName: "NoReal Beauty Team",
+          published: true,
+          publishedAt: new Date(),
+          tags: ["skincare-basics", "tutorials", "beginner-friendly"],
+        },
+        {
+          title: "Understanding Hyaluronic Acid: The Hydration Hero",
+          slug: "understanding-hyaluronic-acid",
+          excerpt: "Everything you need to know about this moisture-binding superstar ingredient.",
+          content: `Hyaluronic acid is one of the most popular ingredients in skincare, and for good reason. This powerful humectant can hold up to 1000 times its weight in water, making it the ultimate hydration hero.
+
+**What is Hyaluronic Acid?**
+Despite the name, it's not an exfoliating acid. It's a sugar molecule that occurs naturally in our skin and helps retain moisture.
+
+**Benefits:**
+- Intense hydration
+- Plumps fine lines
+- Improves skin texture
+- Works for all skin types
+
+**How to Use:**
+Apply to damp skin for best absorption, then seal with a moisturizer.`,
+          authorId: "system",
+          authorName: "NoReal Beauty Team",
+          published: true,
+          publishedAt: new Date(),
+          tags: ["ingredients", "hydration", "featured"],
+        },
+        {
+          title: "5 Skincare Mistakes You're Probably Making",
+          slug: "common-skincare-mistakes",
+          excerpt: "Avoid these common pitfalls to get the most out of your skincare routine.",
+          content: `Even the most dedicated skincare enthusiasts can fall into these common traps. Here's what to avoid:
+
+**1. Not Wearing Sunscreen Daily**
+UV damage is cumulative and happens even on cloudy days.
+
+**2. Over-Exfoliating**
+More isn't always better. Stick to 2-3 times per week.
+
+**3. Skipping Moisturizer on Oily Skin**
+Oily skin needs hydration too! Choose lightweight, oil-free formulas.
+
+**4. Using Too Many Active Ingredients at Once**
+Layer your actives properly and introduce new products slowly.
+
+**5. Not Patch Testing New Products**
+Always test new products on a small area first to check for reactions.`,
+          authorId: "system",
+          authorName: "NoReal Beauty Team",
+          published: true,
+          publishedAt: new Date(),
+          tags: ["tips", "skincare-basics", "common-mistakes"],
+        },
+      ];
+
+      for (const post of samplePosts) {
+        await storage.createBlogPost(post);
+      }
+      
+      log(`✓ Auto-seeded ${samplePosts.length} blog posts`);
+    }
+  } catch (error) {
+    log(`Warning: Could not auto-seed blog posts: ${error}`);
+  }
+}
+
+// Initialize routes
+let initialized = false;
+
+async function initializeApp() {
+  if (!initialized) {
+    await registerRoutes(httpServer, app);
+    await ensureBlogPosts();
+    
+    app.use((err, _req, res, _next) => {
+      const status = err.status || err.statusCode || 500;
+      const message = err.message || "Internal Server Error";
+      res.status(status).json({ message });
+    });
+    
+    initialized = true;
+  }
+}
+
+// Export the Express app as a Firebase Function
+exports.api = functions.https.onRequest(async (req, res) => {
+  await initializeApp();
+  return app(req, res);
+});
