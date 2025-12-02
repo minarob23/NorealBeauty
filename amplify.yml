@@ -1,5 +1,5 @@
 version: 1
-backend:
+frontend:
   phases:
     preBuild:
       commands:
@@ -7,14 +7,11 @@ backend:
     build:
       commands:
         - npm run build
-    postBuild:
-      commands:
-        - echo "Build completed"
-artifacts:
-  baseDirectory: /
-  files:
-    - '**/*'
-cache:
-  paths:
-    - .npm/**/*
-    - node_modules/**/*
+  artifacts:
+    baseDirectory: dist
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - .npm/**/*
+      - node_modules/**/*
