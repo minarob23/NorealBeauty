@@ -1,12 +1,12 @@
 import "dotenv/config";
 import { setupApp, log, httpServer } from "./app";
-import { setupVite } from "./vite";
 
 (async () => {
   const app = await setupApp();
 
   // Setup vite in development only
   if (process.env.NODE_ENV !== "production") {
+    const { setupVite } = await import("./vite");
     await setupVite(httpServer, app);
   }
 
