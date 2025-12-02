@@ -14,6 +14,31 @@ declare module "http" {
   }
 }
 
+// CORS Configuration for Firebase Frontend
+app.use((req, res, next) => {
+  const allowedOrigins = [
+    'http://localhost:5173', // Local development
+    'http://localhost:5000',
+    process.env.FRONTEND_URL, // Firebase hosting URL (set in env vars)
+  ].filter(Boolean);
+
+  const origin = req.headers.origin;
+  if (origin && allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+  // Handle preflight
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(204);
+  }
+
+  next();
+});
+
 app.use(
   express.json({
     verify: (req, _res, buf) => {
